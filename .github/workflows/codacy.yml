@@ -58,13 +58,17 @@ jobs:
 
       - name: Upload SARIF results 
         run: |
-            curl -X POST \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Content-Type: application/json" \
-              --data-binary @results.sarif \
-              "https://api.github.com/repos/${{ github.repository }}/code-scanning/sarifs"
-
+          base64_encoded_sarif=$(base64 -w 0 results.sarif)
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Content-Type: application/json" \
+            --data '{
+              "commit_sha": "${{ github.sha }}",
+              "ref": "${{ github.ref }}",
+              "sarif": "'"$base64_encoded_sarif"'"
+            }' \
+            "https://api.github.com/repos/${{ github.repository }}/code-scanning/sarifs"
 
       # - name: Upload SARIF results - Part 2
       #   uses: github/codeql-action/upload-sarif@v2
