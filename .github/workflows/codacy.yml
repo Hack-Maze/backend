@@ -71,10 +71,11 @@ jobs:
       #          jq '.' "$file_path" > "$file_path.tmp" && mv "$file_path.tmp" "$file_path"  || true
 
 
-      - name: Upload SARIF results - Part 1
-        uses: github/codeql-action/upload-sarif@v2
+      - name: Upload SARIF results - Part 
+        uses: actions/upload-artifact@v3
         with:
-          sarif_file: results.sarif00
+          name: results.sarif00
+          path: .
 
       - name: Upload SARIF results - Part 2
         uses: github/codeql-action/upload-sarif@v2
