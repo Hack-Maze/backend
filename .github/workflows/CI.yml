@@ -125,12 +125,12 @@ jobs:
   lint:
     if: github.actor!= 'dependabot[bot]'
     defaults:
-    run:
-      shell: bash
-      working-directory: backend/app/app
+      run:
+        shell: bash
+        working-directory: backend/app/app
 
             
-    needs: [build_test]
+    needs: [build-test]
     runs-on: ubuntu-latest
     steps:    
       - name: short-sha
@@ -195,7 +195,7 @@ jobs:
 
 ############################################################################
           
-  analyze:
+  analyze-codeQL:
     if: github.actor!= 'dependabot[bot]'
     name: Analyze code
     runs-on: ubuntu-latest
@@ -203,7 +203,7 @@ jobs:
       run:
         shell: bash
         working-directory: backend/app/app
-    needs: [build_test]
+    needs: [build-test]
     permissions:
       actions: read
       contents: read
@@ -258,12 +258,12 @@ jobs:
 
       
 
-    - name: notify analyze Stage Succeeded
+    - name: notify analyze-codeQL Stage Succeeded
       uses: rjstone/discord-webhook-notify@v1
       if: success()
       with:
           severity: info
-          details: "##  > - **Analyze stage Succeeded**"
+          details: "##  > - **Analyze-codeQL stage Succeeded**"
           footer: sha ${{ env.SHA }}
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
       env:
@@ -273,7 +273,7 @@ jobs:
       if: failure()
       with:
           severity: error
-          details: "##  > - **Analyze stage Failed**"
+          details: "##  > - **Analyze-codeQL stage Failed**"
           footer: sha ${{ env.SHA }}
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
       env:
@@ -283,7 +283,7 @@ jobs:
       if: cancelled()
       with:
           severity: warn
-          details: "##  > - **Analyze Cancelled!**"
+          details: "##  > - **Analyze-codeQL Cancelled!**"
           footer: sha ${{ env.SHA }}
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
       env:
@@ -291,7 +291,85 @@ jobs:
 
 ############################################################################
 
-          
+  analyze-codacy:
+      if: github.actor!= 'dependabot[bot]'
+      needs: [build-test]
+      defaults:
+        run:
+          shell: bash
+          working-directory: backend/app/app
+      permissions:
+        contents: read # for actions/checkout to fetch code
+        security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+        actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+      name: Codacy Security Scan
+      runs-on: ubuntu-latest
+      steps:
+
+        - name: short-sha
+          uses: benjlevesque/short-sha@v2.2
+          env:
+            SHA: ${{ steps.short-sha.outputs.sha }}
+            
+        # Checkout the repository to the GitHub Actions runner
+        - name: Checkout code
+          uses: actions/checkout@v3
+  
+        # Execute Codacy Analysis CLI and generate a SARIF output with the security issues identified during the analysis
+        - name: Run Codacy Analysis CLI
+          uses: codacy/codacy-analysis-cli-action@d840f886c4bd4edc059706d09c6a1586111c540b
+          with:
+            # Check https://github.com/codacy/codacy-analysis-cli#project-token to get your project token from your Codacy repository
+            # You can also omit the token and run the tools that support default configurations
+            project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+            verbose: true
+            output: results.sarif
+            format: sarif
+            # Adjust severity of non-security issues
+            gh-code-scanning-compat: true
+            # Force 0 exit code to allow SARIF file generation
+            # This will handover control about PR rejection to the GitHub side
+            max-allowed-issues: 2147483647
+  
+        # Upload the SARIF file generated in the previous step
+        - name: Upload SARIF results file
+          uses: github/codeql-action/upload-sarif@v2
+          with:
+            sarif_file: results.sarif
+
+        - name: notify analyze-codacy Stage Succeeded
+          uses: rjstone/discord-webhook-notify@v1
+          if: success()
+          with:
+              severity: info
+              details: "##  > - **Analyze-codacy stage Succeeded**"
+              footer: sha ${{ env.SHA }}
+              webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          env:
+            SHA: ${{ env.SHA }}
+        - name: Test Failure
+          uses: rjstone/discord-webhook-notify@v1
+          if: failure()
+          with:
+              severity: error
+              details: "##  > - **Analyze-codacy stage Failed**"
+              footer: sha ${{ env.SHA }}
+              webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          env:
+            SHA: ${{ env.SHA }}
+        - name: Test Cancelled
+          uses: rjstone/discord-webhook-notify@v1
+          if: cancelled()
+          with:
+              severity: warn
+              details: "##  > - **Analyze-codacy Cancelled!**"
+              footer: sha ${{ env.SHA }}
+              webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          env:
+              SHA: ${{ env.SHA }}
+            
+ 
+############################################################################          
                     
   push_to_Docker_Hub:
     
@@ -301,7 +379,7 @@ jobs:
       run:
         shell: bash
         working-directory: backend/app
-    needs: [analyze,lint]
+    needs: [analyze-codeQL,analyze-codacy,lint]
     steps:
       - name: short-sha
         uses: benjlevesque/short-sha@v2.2
@@ -419,7 +497,7 @@ jobs:
   notify_Discord_CI_finished:
     if: github.actor!= 'dependabot[bot]'
     runs-on: ubuntu-latest
-
+    needs: [push_to_Docker_Hub]
     steps:
       - name: notify Backend CI Workflow Finished
         uses: rjstone/discord-webhook-notify@v1
