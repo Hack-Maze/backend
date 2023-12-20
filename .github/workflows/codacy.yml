@@ -55,10 +55,13 @@ jobs:
       #     split -n 2 -d results.sarif results.sarif
 
 
-
-      - name: Upload SARIF results 
+      - name: Base64 encode SARIF file
         run: |
           base64_encoded_sarif=$(base64 -w 0 results.sarif)
+          echo "::set-env name=BASE64_ENCODED_SARIF::${base64_encoded_sarif}"
+
+      - name: Upload SARIF using REST API
+        run: |
           curl -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
@@ -66,7 +69,7 @@ jobs:
             --data '{
               "commit_sha": "${{ github.sha }}",
               "ref": "${{ github.ref }}",
-              "sarif": "'"$base64_encoded_sarif"'"
+              "sarif": "'"$BASE64_ENCODED_SARIF"'"
             }' \
             "https://api.github.com/repos/${{ github.repository }}/code-scanning/sarifs"
 
