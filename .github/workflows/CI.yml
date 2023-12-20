@@ -254,7 +254,7 @@ jobs:
     #   make release
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
 
       
 
@@ -426,6 +426,6 @@ jobs:
         with:
           severity: info
           color: '#7851A9'
-          details: "## > - **Frontend CI Workflow Finished!**"
+          details: "## > - **Backend CI Workflow Finished!**"
           footer: HORRAI.
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
