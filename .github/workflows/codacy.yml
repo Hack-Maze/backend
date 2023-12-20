@@ -1,0 +1,111 @@
+
+name: Codacy Security Scan
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "develop", main ]
+    paths:
+        - 'backend/app/app/**'
+  pull_request:
+    branches: [ "develop" , main ]
+    paths:
+        - 'backend/app/app/**'
+      
+  schedule:
+    - cron: '44 5 * * 5'
+
+permissions:
+  contents: read
+
+jobs:
+  codacy-security-scan:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+    name: Codacy Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Execute Codacy Analysis CLI and generate a SARIF output with the security issues identified during the analysis
+      - name: Run Codacy Analysis CLI
+        uses: codacy/codacy-analysis-cli-action@master
+        with:
+          # Check https://github.com/codacy/codacy-analysis-cli#project-token to get your project token from your Codacy repository
+          # You can also omit the token and run the tools that support default configurations
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          verbose: true
+          output: results.sarif
+          format: sarif
+          # Adjust severity of non-security issues
+          gh-code-scanning-compat: true
+          # Force 0 exit code to allow SARIF file generation
+          # This will handover control about PR rejection to the GitHub side
+          max-allowed-issues: 2147483647
+
+
+
+
+      # - name: Split SARIF File
+      #   run: |
+      #     split -n 2 -d results.sarif results.sarif
+
+
+      # - name: Base64 encode SARIF file
+      #   run: |
+      #     base64_encoded_sarif=$(base64 -w 0 results.sarif)
+      #     echo "BASE64_ENCODED_SARIF=$base64_encoded_sarif" >> $GITHUB_ENV
+
+      # - name: Upload SARIF using REST API
+      #   run: |
+      #     curl -X POST \
+      #       -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       -H "Content-Type: application/json" \
+      #       --data '{
+      #         "commit_sha": "${{ github.sha }}",
+      #         "ref": "${{ github.ref }}",
+      #         "sarif": "'"$BASE64_ENCODED_SARIF"'"
+      #       }' \
+      #       "https://api.github.com/repos/${{ github.repository }}/code-scanning/sarifs"
+
+
+
+      # - name: Upload SARIF using REST API
+      #   run: |
+      #     curl -X POST \
+      #       -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+      #       -H "Content-Type: application/sarif" \
+      #       --data-binary @results.sarif \
+      #       "https://api.github.com/repos/${{ github.repository }}/code-scanning/sarifs?ref=${{ github.ref }}&commit_sha=${{ github.sha }}"
+
+
+      - name: Upload SARIF using GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gzip results.sarif
+          base64 results.sarif.gz > results.sarif.gz.base64
+
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{ github.repository }}/code-scanning/sarifs \
+            -f commit_sha=${{ github.sha }} \
+            -f ref=${{ github.ref }} \
+            --field "sarif=@results.sarif.gz.base64"
+
+
+          gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/OWNER/REPO/code-scanning/sarifs/
+
+            
+
+
