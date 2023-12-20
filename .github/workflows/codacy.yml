@@ -50,37 +50,26 @@ jobs:
 
 
 
-      - name: Split SARIF File
+      # - name: Split SARIF File
+      #   run: |
+      #     split -n 2 -d results.sarif results.sarif
+
+
+
+      - name: Upload SARIF results 
         run: |
-          split -n 2 -d results.sarif results.sarif
-
-      # - name: Fix JSON syntax issues - Part 1
-      #   run: |
-      #       #!/bin/bash
-            
-      #         file_path='results.sarif00'
-      #           # Reformat JSON file and overwrite the original
-      #          jq '.' "$file_path" > "$file_path.tmp" && mv "$file_path.tmp" "$file_path"  || true
-
-      # - name: Fix JSON syntax issues - Part 1
-      #   run: |
-      #       #!/bin/bash
-            
-      #         file_path='results.sarif01'
-      #           # Reformat JSON file and overwrite the original
-      #          jq '.' "$file_path" > "$file_path.tmp" && mv "$file_path.tmp" "$file_path"  || true
+            curl -X POST \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Content-Type: application/json" \
+              --data-binary @results.sarif \
+              "https://api.github.com/repos/${{ github.repository }}/code-scanning/sarifs"
 
 
-      - name: Upload SARIF results - Part 
-        uses: actions/upload-artifact@v3
-        with:
-          name: results.sarif00
-          path: .
-
-      - name: Upload SARIF results - Part 2
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: results.sarif01
+      # - name: Upload SARIF results - Part 2
+      #   uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: results.sarif01
 
 
 
