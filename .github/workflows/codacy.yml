@@ -54,6 +54,14 @@ jobs:
         run: |
           split -n 2 -d results.sarif results.sarif
 
+      - name: Fix JSON syntax issues - Part 1
+        run: |
+            #!/bin/bash
+            
+              file_path='results.sarif00'
+                # Reformat JSON file and overwrite the original
+               jq '.' "$file_path" > "$file_path.tmp" && mv "$file_path.tmp" "$file_path"
+
       - name: Upload SARIF results - Part 1
         uses: github/codeql-action/upload-sarif@main
         with:
