@@ -47,8 +47,22 @@ jobs:
           # This will handover control about PR rejection to the GitHub side
           max-allowed-issues: 2147483647
 
-      # Upload the SARIF file generated in the previous step
-      - name: Upload SARIF results file
+
+
+
+      - name: Split SARIF File
+        run: |
+          split -n 2 -d results.sarif results.sarif
+
+      - name: Upload SARIF results - Part 1
         uses: github/codeql-action/upload-sarif@main
         with:
-          sarif_file: results.sarif
+          sarif_file: results.sarif00
+
+      - name: Upload SARIF results - Part 2
+        uses: github/codeql-action/upload-sarif@main
+        with:
+          sarif_file: results.sarif01
+
+
+
