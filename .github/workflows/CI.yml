@@ -1,0 +1,431 @@
+name: fast-CI
+
+on: 
+  workflow_dispatch:
+  
+  push: 
+    branches:
+      - main
+      - develop
+      - feature-**
+    paths:
+        - 'backend/app/app/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+      - feature-**
+    paths:
+        - 'backend/app/app/**'
+      
+
+jobs:
+
+
+  notify_Discord_CI_started:
+    if: github.actor!= 'dependabot[bot]'
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: notify Backend CI Workflow started
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          color: '#7851A9'
+          details: "## > - **Frontend CI Workflow started!**"
+          footer: HORRAI.
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+
+#####################################################################################
+
+
+  build-test:
+    runs-on: ubuntu-latest 
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./backend/app/app
+    steps:
+
+      - name: short-sha
+        uses: benjlevesque/short-sha@v2.2
+        env:
+          SHA: ${{ steps.short-sha.outputs.sha }}
+          
+
+
+      - name: checkout
+        uses: actions/checkout@v4
+    
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v5 
+        with:
+          python-version: 3.8 # Modify python version HERE
+
+      #Task for installing dependencies, multi-line command
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+          pip install -r requirements.txt 
+
+
+      # Task for testing with pytest
+      - name: Test with pytest
+        run: |
+          pytest
+
+      
+      
+
+      - name: notify Frontend Discord Build-test Stage Succeeded
+        uses: rjstone/discord-webhook-notify@v1
+        env:
+          SHA: ${{ env.SHA }}
+          
+        
+        if: success()
+        with:
+          severity: info
+          details: "## > - **Build-test stage Succeeded**"
+          footer: sha ${{ env.SHA }}
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+
+            
+      - name: Test Failure
+        uses: rjstone/discord-webhook-notify@v1
+        env:
+          SHA: ${{ env.SHA }}
+    
+        if: failure()
+        with:
+          severity: error
+          details: "## > - **Build-test stage Failed**"
+          footer: sha ${{ env.SHA }}
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Test Cancelled
+        uses: rjstone/discord-webhook-notify@v1
+        if: cancelled()
+        with:
+          severity: warn
+          details: "## > - **Build-test stage Cancelled!**"
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+
+
+
+#############################################################################
+
+
+  lint:
+    if: github.actor!= 'dependabot[bot]'
+    defaults:
+    run:
+      shell: bash
+      working-directory: backend/app/app
+
+            
+    needs: [build_test]
+    runs-on: ubuntu-latest
+    steps:    
+      - name: short-sha
+        uses: benjlevesque/short-sha@v2.2
+        env:
+          SHA: ${{ steps.short-sha.outputs.sha }}
+          
+
+    
+            
+  
+
+
+      - uses: actions/checkout@v4
+        name: 'Checkout repository'
+
+
+      ##############################
+      # Run Linter against code base #
+      ################################
+      - name: Lint Code Base
+        uses: super-linter/super-linter/slim@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISABLE_ERRORS: true
+          FILTER_REGEX_INCLUDE: .*backend/app/app/.*
+
+
+
+      - name: notify Backend  lint Stage Succeeded
+        uses: rjstone/discord-webhook-notify@v1
+        if: success()
+        with:
+            severity: info
+            details: "## > - **Lint stage Succeeded** "
+            footer: sha ${{ env.SHA }}
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        env:
+          SHA: ${{ env.SHA }}
+            
+      - name: Test Failure
+        uses: rjstone/discord-webhook-notify@v1
+        if: failure()
+        with:
+            severity: error
+            details: "## > - **Lint stage Failed**"
+            footer: sha ${{ env.SHA }}
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        env:
+          SHA: ${{ env.SHA }}
+          
+      - name: Test Cancelled
+        uses: rjstone/discord-webhook-notify@v1
+        if: cancelled()
+        with:
+            severity: warn
+            details: "## > - **Lint Cancelled!**"
+            footer: sha ${{ env.SHA }}
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        env:
+          SHA: ${{ env.SHA }}
+
+############################################################################
+          
+  analyze:
+    if: github.actor!= 'dependabot[bot]'
+    name: Analyze code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend/app/app
+    needs: [build_test]
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python' ]
+        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
+
+    steps:
+    
+    - name: short-sha
+      uses: benjlevesque/short-sha@v2.2
+      env:
+        SHA: ${{ steps.short-sha.outputs.sha }}
+        
+  
+
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+        # If you wish to specify custom queries, you can do so here or in a config file.
+        # By default, queries listed here will override any specified in a config file.
+        # Prefix the list here with "+" to use these queries and those in the config file.
+        # queries: ./path/to/local/query, your-org/your-repo/queries@main
+
+    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
+    # If this step fails, then you should remove it and run the build manually (see below)
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+
+
+    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
+    #    and modify them (or add more) to build your code if your project
+    #    uses a compiled language
+
+    #- run: |
+    #   make bootstrap
+    #   make release
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+      
+
+    - name: notify analyze Stage Succeeded
+      uses: rjstone/discord-webhook-notify@v1
+      if: success()
+      with:
+          severity: info
+          details: "##  > - **Analyze stage Succeeded**"
+          footer: sha ${{ env.SHA }}
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      env:
+        SHA: ${{ env.SHA }}
+    - name: Test Failure
+      uses: rjstone/discord-webhook-notify@v1
+      if: failure()
+      with:
+          severity: error
+          details: "##  > - **Analyze stage Failed**"
+          footer: sha ${{ env.SHA }}
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      env:
+        SHA: ${{ env.SHA }}
+    - name: Test Cancelled
+      uses: rjstone/discord-webhook-notify@v1
+      if: cancelled()
+      with:
+          severity: warn
+          details: "##  > - **Analyze Cancelled!**"
+          footer: sha ${{ env.SHA }}
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      env:
+          SHA: ${{ env.SHA }}
+
+############################################################################
+
+          
+                    
+  push_to_Docker_Hub:
+    
+    if: github.actor!= 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend/app
+    needs: [analyze,lint]
+    steps:
+      - name: short-sha
+        uses: benjlevesque/short-sha@v2.2
+        env:
+          SHA: ${{ steps.short-sha.outputs.sha }}
+          
+              
+      
+
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERUSERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./hackmaze.Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ secrets.DOCKERUSERNAME }}/${{ secrets.DOCKER_REPO }}:latest
+            ${{ secrets.DOCKERUSERNAME }}/${{ secrets.DOCKER_REPO }}:${{ env.SHA }}
+
+
+
+  
+      - name: Clean up Docker Tags
+        run: |
+          #!/bin/bash
+          
+          REPO_NAME=${{ secrets.DOCKERUSERNAME }}/${{ secrets.DOCKER_REPO }}  # Replace with your Docker repository name
+          USER_NAME=${{ secrets.DOCKERUSERNAME }}
+          # Get list of tags for the repository
+          TAGS=$(curl -sS "https://hub.docker.com/v2/repositories/${REPO_NAME}/tags/?page_size=10000" | jq -r '.results|.[]|.name')
+          
+          # Retain the first three tags (most recent)
+          KEEP_TAGS=$(echo "$TAGS" | head -n 3)
+          
+          echo "All Tags: $TAGS"
+          echo "Retaining Tags: $KEEP_TAGS"
+          
+          TOKEN=${{ secrets.DOCKERHUB_TOKEN }} # Replace with your Docker Hub Personal Access Token
+          HUB_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"$USER_NAME\", \"password\": \"$TOKEN\"}" https://hub.docker.com/v2/users/login/ | jq -r .token)
+          
+          
+          # Loop through all tags, delete those not in the retained list
+          for tag in $TAGS; do
+          
+              if [[  "$KEEP_TAGS" =~ "$tag" ]]; then
+                  echo "keeping $tag"
+                  
+              else
+                  
+                  response=$(curl -i -X DELETE   -H "Accept: application/json"   -H "Authorization: JWT $HUB_TOKEN"   https://hub.docker.com/v2/repositories/$REPO_NAME/tags/$tag/)
+                  echo "Deleted tag: $tag - Response: $response"
+                  
+              fi
+          done
+
+
+
+        
+
+      - name: notify Push to Dockerhub Stage Succeeded
+        uses: rjstone/discord-webhook-notify@v1
+        if: success()
+        with:
+            severity: info
+            details: "##  > - **Push to DockerHub stage Succeeded**"
+            footer: sha ${{ env.SHA }}
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        env:
+          SHA: ${{ env.SHA }}
+            
+      - name: Test Failure
+        uses: rjstone/discord-webhook-notify@v1
+        if: failure()
+        with:
+            severity: error
+            details: "##  > - **Push to DockerHub stage Failed**"
+            footer: sha ${{ env.SHA }}
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        env:
+          SHA: ${{ env.SHA }}
+      - name: Test Cancelled
+        uses: rjstone/discord-webhook-notify@v1
+        if: cancelled()
+        with:
+            severity: warn
+            details: "##  > - **Push to DockerHub Cancelled!**"
+            footer: sha ${{ env.SHA }}
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        env:
+          SHA: ${{ env.SHA }}
+
+
+
+
+
+#############################################################################
+
+  notify_Discord_CI_finished:
+    if: github.actor!= 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: notify Backend CI Workflow Finished
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          color: '#7851A9'
+          details: "## > - **Frontend CI Workflow Finished!**"
+          footer: HORRAI.
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
