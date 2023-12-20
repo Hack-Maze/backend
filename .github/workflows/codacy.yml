@@ -58,7 +58,7 @@ jobs:
       - name: Base64 encode SARIF file
         run: |
           base64_encoded_sarif=$(base64 -w 0 results.sarif)
-          echo "::set-env name=BASE64_ENCODED_SARIF::${base64_encoded_sarif}"
+          echo "BASE64_ENCODED_SARIF=$base64_encoded_sarif" >> $GITHUB_ENV
 
       - name: Upload SARIF using REST API
         run: |
