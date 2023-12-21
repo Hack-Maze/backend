@@ -12,18 +12,12 @@
 name: "CodeQL"
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ "develop", main ]
-    paths:
-        - 'backend/app/app/**'
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "develop" , main ]
-    paths:
-        - 'backend/app/app/**'
-      
+    branches: [ "develop" ]
   schedule:
-    - cron: '44 5 * * 5'
+    - cron: '23 5 * * 4'
 
 jobs:
   analyze:
@@ -43,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'python' ]
+        language: [ 'javascript-typescript', 'python' ]
         # CodeQL supports [ 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift' ]
         # Use only 'java-kotlin' to analyze code written in Java, Kotlin or both
         # Use only 'javascript-typescript' to analyze code written in JavaScript, TypeScript or both
