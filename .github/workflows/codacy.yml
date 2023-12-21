@@ -15,10 +15,14 @@ name: Codacy Security Scan
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "develop","main" ]
+    paths:
+      - '!.github/workflows'
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "develop" ]
+    branches: [ "develop","main" ]
+    paths:
+      - '!.github/workflows'
   schedule:
     - cron: '38 22 * * 5'
 
