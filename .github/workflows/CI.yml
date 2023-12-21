@@ -5,20 +5,22 @@ on:
   
   push: 
     branches:
-      - main
-      - develop
-      - feature-**
+      - 'main'
+      - 'develop'
+      - 'feature-**'
+      - '!CI-**'
     paths:
         - 'backend/app/app/**'
+        - '!.github/workflows'
   pull_request:
     branches:
-      - main
-      - develop
-      - feature-**
+      - 'main'
+      - 'develop'
+      - 'feature-**'
+      - '!CI-**'
     paths:
         - 'backend/app/app/**'
-      
-
+        - '!.github/workflows'
 
 jobs:
 
