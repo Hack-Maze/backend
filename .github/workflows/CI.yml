@@ -9,6 +9,7 @@ on:
       - 'develop'
       - 'feature-**'
       - '!CI-**'
+      - 'deploy'
       
     paths-ignore:    
         - '*.md'
@@ -20,7 +21,7 @@ on:
       - 'develop'
       - 'feature-**'
       - '!CI-**'
-      
+      - 'deploy'
     paths-ignore:    
         - '*.md'
         - 'docker-compose.yml'
@@ -573,4 +574,3 @@ jobs:
             details: "## > - **Frontend CI Workflow Finished!**"
             footer: HORRAI.
             webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-            
