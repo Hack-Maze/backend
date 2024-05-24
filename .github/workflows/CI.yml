@@ -433,8 +433,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ${{ github.workspace }}
-          file: .
+          context: .
+          file: ./dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ secrets.DOCKERUSERNAME }}/${{ secrets.DOCKER_REPO }}:latest
