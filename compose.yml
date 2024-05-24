@@ -3,7 +3,7 @@ services:
     build:
       context: .
     ports:
-      - 9090:9090
+      - 4444:4444
     depends_on:
       db:
         condition: service_healthy
