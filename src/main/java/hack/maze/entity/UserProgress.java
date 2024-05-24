@@ -28,8 +28,11 @@ public class UserProgress {
     private Profile profile;
 
     @OneToMany
-    private List<ProfileMaze> activateMazes;
+    private List<ProfileMaze> activeMazes;
 
     @OneToMany
-    private List<ProfileQuestion> activateQuestions;
+    private List<ProfileQuestion> activeQuestions;
+
+    @OneToMany
+    private List<ProfilePage> activePages;
 }
