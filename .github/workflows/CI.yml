@@ -573,3 +573,4 @@ jobs:
             details: "## > - **Frontend CI Workflow Finished!**"
             footer: HORRAI.
             webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+            
