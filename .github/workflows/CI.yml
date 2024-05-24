@@ -434,7 +434,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ${{ github.workspace }}
-          file: ${{ github.workspace }}
+          file: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ secrets.DOCKERUSERNAME }}/${{ secrets.DOCKER_REPO }}:latest
