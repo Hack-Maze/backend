@@ -5,9 +5,7 @@ on:
 
   push: 
     branches:
-      - 'main'
-      - 'dev'
-      - 'feature-**'
+      - '*'
       - '!CI-**'
       
     paths-ignore:    
@@ -16,9 +14,7 @@ on:
         - '.github/workflows/*'
   pull_request:
     branches:
-      - 'main'
-      - 'dev'
-      - 'feature-**'
+      - '*'
       - '!CI-**'
       
     paths-ignore:    
@@ -404,7 +400,7 @@ jobs:
         working-directory: ${{ github.workspace }}
 
     needs: [lint]
-    if: ${{ github.event_name != 'pull_request' }}
+    if: github.actor != 'dependabot[bot]' && github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: short-sha
         uses: benjlevesque/short-sha@v2.2
