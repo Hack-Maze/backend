@@ -5,6 +5,7 @@ import hack.maze.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class InitDB {
     private final MazeRepo mazeRepo;
     private final PageRepo pageRepo;
     private final QuestionRepo questionRepo;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     CommandLineRunner commandLineRunner() {
@@ -27,7 +29,7 @@ public class InitDB {
                     .builder()
                     .email("user1@user1.user1")
                     .username("user1")
-                    .password("password1")
+                    .password(passwordEncoder.encode("password1"))
                     .role(Role.USER)
                     .createdAt(LocalDateTime.now())
                     .build());
