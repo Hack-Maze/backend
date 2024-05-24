@@ -23,11 +23,11 @@ USER appuser
 
 
 # Copy the executable from the "package" stage.
-COPY  --from=build /build/target/hackmaze-0.0.1-SNAPSHOT.jar .
+COPY  --from=build /build/target/app-0.0.1-SNAPSHOT.jar app.jar
 # Set the command to run the application
 
 
 EXPOSE 4444
 
-CMD ["java", "-jar", "app-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "app.jar"]
 

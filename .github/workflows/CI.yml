@@ -376,7 +376,7 @@ jobs:
 
       - name: Build an image from Dockerfile
         run: |
-          docker build -t docker.io/mostafaewida/hackmaze_backend_spring:${{ github.sha }} -f dockerfile .
+          docker build -t docker.io/mostafaewida/hackmaze_backend_spring:${{ github.sha }}  .
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
@@ -531,3 +531,45 @@ jobs:
           details: "## > - **backend CI Workflow Finished!**"
           footer: HORRAI.
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+
+
+
+#############################################################################
+
+#############################################################################
+
+
+
+
+
+  deploy-azure:
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]' && github.event_name == 'push' && github.ref == 'refs/heads/deploy'
+    needs: [push_to_Docker_Hub]
+    steps:
+    
+      - name: deploy to azure
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          workflow: terraform-apply.yml
+          repo: Hack-Maze/IaC
+          ref: main
+
+
+  notify_Discord_CI_finish-deploy:
+    if: github.actor!= 'dependabot[bot]'
+    needs: [deploy-azure]
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: notify Frontend CI Workflow finished
+        uses: rjstone/discord-webhook-notify@v1.0.4
+        with:
+            severity: info
+            color: '#7851A9'
+            details: "## > - **Frontend CI Workflow Finished!**"
+            footer: HORRAI.
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
