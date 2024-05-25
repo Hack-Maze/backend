@@ -1,0 +1,1 @@
+[![Java-CI](https://github.com/Hack-Maze/backend-spring/actions/workflows/CI.yml/badge.svg)](https://github.com/Hack-Maze/backend-spring/actions/workflows/CI.yml)
