@@ -25,7 +25,7 @@ public class BadgeController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createTag(@RequestBody BadgeDTO badgeDTO) {
+    public ResponseEntity<?> createBadge(@ModelAttribute BadgeDTO badgeDTO) {
         try {
             return ResponseEntity.ok(badgeService.createBadge(badgeDTO));
         } catch (Exception e) {

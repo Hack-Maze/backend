@@ -39,7 +39,7 @@ public class GetCurrentUserFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         try {
-            if (isAuthEndpoint(request)) {
+            if (!isAuthEndpoint(request)) {
                 String authHeader = request.getHeader(AUTHORIZATION);
                 String jwt = authHeader.substring(TOKEN_PREFIX.length());
                 String username = jwtUtils.extractClaims(jwt).getSubject();
