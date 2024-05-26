@@ -1,19 +1,21 @@
 package hack.maze.config;
 
+import hack.maze.entity.AppUser;
+
 public class UserContext {
 
-    private static final ThreadLocal<String> currentUsername = new ThreadLocal<>();
+    private static final ThreadLocal<AppUser> currentUser = new ThreadLocal<>();
 
-    public static void setCurrentUsername(String username) {
-        currentUsername.set(username);
+    public static void setCurrentUser(AppUser appUser) {
+        currentUser.set(appUser);
     }
 
-    public static String getCurrentUsername() {
-        return currentUsername.get();
+    public static AppUser getCurrentUser() {
+        return currentUser.get();
     }
 
     public static void clearContext() {
-        currentUsername.remove();
+        currentUser.remove();
     }
 
 }

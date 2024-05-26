@@ -4,13 +4,11 @@ import hack.maze.dto.CreateMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
-import hack.maze.entity.AppUser;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Tag;
 import hack.maze.repository.MazeRepo;
 import hack.maze.service.MazeService;
 import hack.maze.service.TagService;
-import hack.maze.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +24,8 @@ import java.util.Objects;
 import static hack.maze.config.UserContext.getCurrentUser;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeResponseDTO;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
+import static hack.maze.utils.GlobalMethods.checkUserAuthority;
+import static hack.maze.utils.GlobalMethods.nullMsg;
 
 @Service
 @RequiredArgsConstructor
@@ -42,17 +43,15 @@ public class MazeServiceImpl implements MazeService {
     }
 
     private Maze fillMazeInfo(CreateMazeDTO createMazeDTO) {
-
-        log.info("currentUserProfile: {}", getCurrentUser().getProfile());
-
         return Maze
                 .builder()
                 .visibility(true)
                 .title(createMazeDTO.title())
                 .description(createMazeDTO.description())
                 .summary(createMazeDTO.summary())
+                .author(getCurrentUser().getProfile())
+                .createdAt(LocalDateTime.now())
                 .build();
-
     }
 
     private String sendImageToAzure(MultipartFile image) {
@@ -68,9 +67,9 @@ public class MazeServiceImpl implements MazeService {
     }
 
     private void validateCreateMazeDTO(CreateMazeDTO createMazeDTO) {
-        Objects.requireNonNull(createMazeDTO.title());
-        Objects.requireNonNull(createMazeDTO.description());
-        Objects.requireNonNull(createMazeDTO.summary());
+        Objects.requireNonNull(createMazeDTO.title(), nullMsg("title"));
+        Objects.requireNonNull(createMazeDTO.description(), nullMsg("description"));
+        Objects.requireNonNull(createMazeDTO.summary(), nullMsg("summary"));
     }
 
     @Override
@@ -99,8 +98,9 @@ public class MazeServiceImpl implements MazeService {
 
     @Override
     @Transactional
-    public String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) {
+    public String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) throws AccessDeniedException {
         Maze maze = _getSingleMaze(mazeId);
+        checkUserAuthority(getCurrentUser(), maze);
         if (updateMazeDTO.title() != null) {
             maze.setTitle(updateMazeDTO.title());
         }
@@ -125,9 +125,4 @@ public class MazeServiceImpl implements MazeService {
         return "maze with id = [" + mazeId + "] updated successfully";
     }
 
-    private void checkUserAuthority(AppUser appUser, Maze targetMaze) throws AccessDeniedException {
-        if (!Objects.equals(appUser.getUsername(), targetMaze.getAuthor().getAppUser().getUsername())) {
-            throw new AccessDeniedException("Access denied!");
-        }
-    }
 }

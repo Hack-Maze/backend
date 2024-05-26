@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Objects;
 
+import static hack.maze.utils.GlobalMethods.nullMsg;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -35,8 +37,8 @@ public class BadgeServiceImpl implements BadgeService {
     }
 
     private void validateBadgeDTOInfo(BadgeDTO badgeDTO) {
-        Objects.requireNonNull(badgeDTO.title());
-        Objects.requireNonNull(badgeDTO.image());
+        Objects.requireNonNull(badgeDTO.title(), nullMsg("title"));
+        Objects.requireNonNull(badgeDTO.image(), nullMsg("image"));
     }
 
     @Override

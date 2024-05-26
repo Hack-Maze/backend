@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 
+import static hack.maze.utils.GlobalMethods.nullMsg;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -26,7 +28,7 @@ public class TagServiceImpl implements TagService {
     }
 
     private void validateTagInfo(Tag tag) {
-        Objects.requireNonNull(tag.getTitle());
+        Objects.requireNonNull(tag.getTitle(), nullMsg("title"));
     }
 
     @Override

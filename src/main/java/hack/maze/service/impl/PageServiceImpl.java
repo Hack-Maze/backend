@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 
+import static hack.maze.utils.GlobalMethods.nullMsg;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -31,9 +33,9 @@ public class PageServiceImpl implements PageService {
     }
 
     private void validatePageInfo(Page page) {
-        Objects.requireNonNull(page.getTitle());
-        Objects.requireNonNull(page.getDescription());
-        Objects.requireNonNull(page.getContent());
+        Objects.requireNonNull(page.getTitle(), nullMsg("title"));
+        Objects.requireNonNull(page.getDescription(), nullMsg("description"));
+        Objects.requireNonNull(page.getContent(), nullMsg("content"));
     }
 
     @Override

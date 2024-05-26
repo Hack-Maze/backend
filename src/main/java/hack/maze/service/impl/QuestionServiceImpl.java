@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 
+import static hack.maze.utils.GlobalMethods.nullMsg;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -30,10 +32,10 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private void validateQuestionInfo(Question question) {
-        Objects.requireNonNull(question.getContent());
-        Objects.requireNonNull(question.getAnswer());
-        Objects.requireNonNull(question.getHint());
-        Objects.requireNonNull(question.getType());
+        Objects.requireNonNull(question.getContent(), nullMsg("content"));
+        Objects.requireNonNull(question.getAnswer(), nullMsg("answer"));
+        Objects.requireNonNull(question.getHint(), nullMsg("hint"));
+        Objects.requireNonNull(question.getType(), nullMsg("type"));
     }
 
     @Override

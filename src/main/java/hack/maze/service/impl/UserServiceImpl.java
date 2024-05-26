@@ -19,4 +19,9 @@ public class UserServiceImpl implements UserService {
     public AppUser getSingleUser(String username) {
         return userRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User with name = [" + username + "] not found"));
     }
+
+    @Override
+    public AppUser findByEmail(String email) {
+        return userRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User with email = [" + email + "] not found"));
+    }
 }

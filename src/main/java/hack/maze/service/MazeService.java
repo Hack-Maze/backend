@@ -15,5 +15,5 @@ public interface MazeService {
     MazeResponseDTO getSingleMaze(long mazeId);
     Maze _getSingleMaze(long mazeId);
     String deleteMaze(long mazeId) throws AccessDeniedException;
-    String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO);
+    String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) throws AccessDeniedException;
 }
