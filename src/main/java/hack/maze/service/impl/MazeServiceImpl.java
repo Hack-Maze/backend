@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static hack.maze.config.UserContext.getCurrentUsername;
+import static hack.maze.config.UserContext.getCurrentUser;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeResponseDTO;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
 
@@ -42,6 +42,9 @@ public class MazeServiceImpl implements MazeService {
     }
 
     private Maze fillMazeInfo(CreateMazeDTO createMazeDTO) {
+
+        log.info("currentUserProfile: {}", getCurrentUser().getProfile());
+
         return Maze
                 .builder()
                 .visibility(true)
@@ -88,7 +91,7 @@ public class MazeServiceImpl implements MazeService {
     @Override
     public String deleteMaze(long mazeId) throws AccessDeniedException {
         Maze maze = _getSingleMaze(mazeId);
-        checkUserAuthority(getCurrentUsername(), maze);
+        checkUserAuthority(getCurrentUser(), maze);
         mazeRepo.deleteById(maze.getId());
         log.warn("maze with id = [{}] will be deleted completely", mazeId);
         return "Maze with id = [" + mazeId + "] deleted successfully";
@@ -116,11 +119,14 @@ public class MazeServiceImpl implements MazeService {
         if (updateMazeDTO.difficulty() != null) {
             maze.setDifficulty(updateMazeDTO.difficulty());
         }
+        if (updateMazeDTO.visibility() != null) {
+            maze.setVisibility(updateMazeDTO.visibility());
+        }
         return "maze with id = [" + mazeId + "] updated successfully";
     }
 
-    private void checkUserAuthority(String currentUsername, Maze targetMaze) throws AccessDeniedException {
-        if (!Objects.equals(currentUsername, targetMaze.getAuthor().getAppUser().getEmail())) {
+    private void checkUserAuthority(AppUser appUser, Maze targetMaze) throws AccessDeniedException {
+        if (!Objects.equals(appUser.getUsername(), targetMaze.getAuthor().getAppUser().getUsername())) {
             throw new AccessDeniedException("Access denied!");
         }
     }
