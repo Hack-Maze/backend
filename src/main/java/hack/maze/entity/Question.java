@@ -29,7 +29,6 @@ public class Question {
     private String content;
     private String answer;
     private String hint;
-    private LocalDateTime solvedAt;
 
     @ManyToOne
     @JsonBackReference

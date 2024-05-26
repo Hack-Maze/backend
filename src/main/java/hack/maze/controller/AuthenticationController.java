@@ -1,6 +1,7 @@
 package hack.maze.controller;
 
 import hack.maze.dto.AuthenticationRequestDTO;
+import hack.maze.dto.RegisterDTO;
 import hack.maze.service.AuthenticationService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,15 @@ public class AuthenticationController {
     public ResponseEntity<?> login(@RequestBody AuthenticationRequestDTO request, HttpServletResponse response) {
         try {
             return ResponseEntity.ok(authenticationService.login(request, response));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> login(@RequestBody RegisterDTO request, HttpServletResponse response) {
+        try {
+            return ResponseEntity.ok(authenticationService.register(request, response));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

@@ -1,0 +1,55 @@
+package hack.maze.mapper;
+
+import hack.maze.dto.MazeResponseDTO;
+import hack.maze.dto.MazeSimpleDTO;
+import hack.maze.entity.Maze;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static hack.maze.mapper.ProfileMapper.fromProfileToMazeProfileDTO;
+
+@Slf4j
+public class MazeMapper {
+
+    public static List<MazeResponseDTO> fromMazeToMazeResponseDTO(List<Maze> mazes) {
+        return mazes.stream().map(MazeMapper::fromMazeToMazeResponseDTO).collect(Collectors.toList());
+    }
+
+    public static MazeResponseDTO fromMazeToMazeResponseDTO(Maze maze) {
+        return MazeResponseDTO
+                .builder()
+                .id(maze.getId())
+                .title(maze.getTitle())
+                .description(maze.getDescription())
+                .summary(maze.getSummary())
+                .createdAt(maze.getCreatedAt())
+                .visibility(maze.isVisibility())
+                .image(maze.getImage())
+                .difficulty(maze.getDifficulty())
+                .author(fromProfileToMazeProfileDTO(maze.getAuthor()))
+                .enrolledUsers(fromProfileToMazeProfileDTO(maze.getEnrolledUsers()))
+                .solvers(fromProfileToMazeProfileDTO(maze.getSolvers()))
+                .tags(maze.getTags())
+                .pages(maze.getPages())
+                .build();
+    }
+
+    public static List<MazeSimpleDTO> fromMazeToMazeSimpleDTO(List<Maze> mazes) {
+        return mazes.stream().map(MazeMapper::fromMazeToMazeSimpleDTO).collect(Collectors.toList());
+    }
+
+    public static MazeSimpleDTO fromMazeToMazeSimpleDTO(Maze maze) {
+        return MazeSimpleDTO
+                .builder()
+                .id(maze.getId())
+                .title(maze.getTitle())
+                .difficulty(maze.getDifficulty())
+                .summary(maze.getSummary())
+                .description(maze.getDescription())
+                .image(maze.getImage())
+                .build();
+    }
+
+}

@@ -1,5 +1,6 @@
 package hack.maze.filter;
 
+import hack.maze.config.UserContext;
 import hack.maze.utils.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,6 +20,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static hack.maze.config.UserContext.clearContext;
+import static hack.maze.config.UserContext.setCurrentUsername;
 import static hack.maze.constant.SecurityConstant.TOKEN_PREFIX;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -39,24 +42,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader(AUTHORIZATION);
-        final String username;
-        final String jwt;
+            final String authHeader = request.getHeader(AUTHORIZATION);
+            final String username;
+            final String jwt;
 
-        if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {
+            if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            jwt = authHeader.substring(TOKEN_PREFIX.length());
+            username = jwtUtils.extractClaims(jwt).getSubject();
+            log.info("username: {}", username);
+
+            if (!isAuthenticationEndpoint(request) && username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                getUserAndPerformAuthentication(request, jwt, username);
+                setCurrentUsername(username);
+            } else {
+                logger.warn("No Token Provided");
+            }
             filterChain.doFilter(request, response);
-            return;
-        }
-
-        jwt = authHeader.substring(TOKEN_PREFIX.length());
-        username = jwtUtils.extractClaims(jwt).getSubject();
-
-        if (!isAuthenticationEndpoint(request) && username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            getUserAndPerformAuthentication(request, jwt, username);
-        } else {
-            logger.warn("No Token Provided");
-        }
-        filterChain.doFilter(request, response);
     }
 
     private boolean isAuthenticationEndpoint(HttpServletRequest request) {

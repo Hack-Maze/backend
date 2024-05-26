@@ -42,7 +42,11 @@ public class Profile {
 
     @OneToMany(mappedBy = "profile")
     @JsonManagedReference
-    private List<UserProgress> userProgresses;
+    private List<ProfileMazeProgress> profileMazeProgresses;
+
+    @OneToMany(mappedBy = "profile")
+    @JsonManagedReference
+    private List<ProfilePageProgress> profilePageProgresses;
 
     @OneToMany(mappedBy = "author")
     @JsonIgnore // TODO: remove json ignore and replace it with dto

@@ -2,7 +2,10 @@ package hack.maze.service.impl;
 
 import hack.maze.dto.AuthenticationRequestDTO;
 import hack.maze.dto.AuthenticationResponseDTO;
+import hack.maze.dto.RegisterDTO;
 import hack.maze.entity.AppUser;
+import hack.maze.entity.Role;
+import hack.maze.exceptions.UserAlreadyFoundException;
 import hack.maze.repository.UserRepo;
 import hack.maze.service.AuthenticationService;
 import hack.maze.utils.JwtUtils;
@@ -17,8 +20,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,14 +35,44 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRepo userRepo;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public AuthenticationResponseDTO register(RegisterDTO request, HttpServletResponse response) throws Exception {
+        checkIfUserWithUsernameExists(request.username());
+        checkIfUserWithEmailExists(request.email());
+        AppUser appUser = AppUser
+                .builder()
+                .role(Role.USER)
+                .username(request.username())
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .createdAt(LocalDateTime.now())
+                .build();
+        userRepo.save(appUser);
+
+        return createTokenAndSetToHeader(request, response);
+    }
+
+    private void checkIfUserWithEmailExists(String email) {
+        if (userRepo.findByEmail(email).isPresent()) {
+            throw new UserAlreadyFoundException("User with email = [" + email + "] already exist");
+        }
+    }
+
+    private void checkIfUserWithUsernameExists(String username) {
+        if (userRepo.findByUsername(username).isPresent()) {
+            throw new UserAlreadyFoundException("User with username = [" + username + "] already exist");
+        }
+    }
 
     @Override
     public AuthenticationResponseDTO login(AuthenticationRequestDTO request, HttpServletResponse response) {
         try {
             return processAuthenticationAndTokenGeneration(request, response);
         } catch (BadCredentialsException bc) {
-            log.error("حطأ في رقم الهاتف أو كلمة المرور");
-            throw new IllegalStateException("حطأ في رقم الهاتف أو كلمة المرور");
+            log.error("Wrong email or password");
+            throw new UsernameNotFoundException("Wrong email or password");
         }
     }
 
@@ -49,35 +84,36 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private void validateAndAuthenticate(AuthenticationRequestDTO request) {
         log.info("Validating user request...");
         validateAuthenticationRequest(request);
-        log.info("Trying to authenticate the user with username: {}", request.username());
+        log.info("Trying to authenticate the user with email: {}", request.email());
         tryingToAuthenticateUser(request);
-        log.info("User with username: {} authenticated Successfully", request.username());
+        log.info("User with email: {} authenticated Successfully", request.email());
     }
 
     private void validateAuthenticationRequest(AuthenticationRequestDTO request) {
-        if (request.username() == null || request.password() == null) {
+        if (request.email() == null || request.password() == null) {
             log.error("You should provide all the required information [phoneNumber, password]");
             throw new PropertyNotFoundException("You should provide all the required information [phoneNumber, password]");
         }
     }
 
     private void tryingToAuthenticateUser(AuthenticationRequestDTO request) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.username().trim(), request.password().trim()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.email().trim(), request.password().trim()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private Map<String, Object> getClaimsFromUser(AppUser appUser) {
         Map<String, Object> userInfo = new HashMap<>();
 
-        userInfo.put("user_id", appUser.getId());
+        userInfo.put("userId", appUser.getId());
         userInfo.put("role", appUser.getRole());
         userInfo.put("username", appUser.getUsername());
+        userInfo.put("email", appUser.getEmail());
 
         return userInfo;
     }
 
     private AuthenticationResponseDTO createTokenAndSetToHeader(AuthenticationRequestDTO request, HttpServletResponse response) {
-        AppUser appUser = loadUserByUsernameIfExist(request.username().trim());
+        AppUser appUser = loadUserByUsernameIfExist(request.email().trim());
         String token = createTokenFromUser(appUser);
         setTokenToHeaderAfterAuthSuccess(response, token);
         return AuthenticationResponseDTO
@@ -88,8 +124,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
-    private AppUser loadUserByUsernameIfExist(String username) {
-        return userRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("حطأ في اسم المستخدم أو كلمة المرور"));
+    private AuthenticationResponseDTO createTokenAndSetToHeader(RegisterDTO request, HttpServletResponse response) {
+        AppUser appUser = loadUserByUsernameIfExist(request.email().trim());
+        String token = createTokenFromUser(appUser);
+        setTokenToHeaderAfterAuthSuccess(response, token);
+        return AuthenticationResponseDTO
+                .builder()
+                .token(token)
+                .role(appUser.getRole())
+                .username(appUser.getUsername())
+                .build();
+    }
+
+    private AppUser loadUserByUsernameIfExist(String email) {
+        return userRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Wrong email or password"));
     }
 
     private String createTokenFromUser(AppUser appUser) {

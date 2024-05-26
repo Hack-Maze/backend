@@ -1,5 +1,6 @@
 package hack.maze.utils;
 
+import hack.maze.entity.AppUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -20,13 +21,13 @@ import static hack.maze.constant.SecurityConstant.SECRET_KEY;
 @Component
 public class JwtUtils {
 
-    public String generateToken(Map<String, Object> claims, UserDetails userDetails) {
+    public String generateToken(Map<String, Object> claims, AppUser appUser) {
         return Jwts
                 .builder()
                 .setClaims(claims)
                 .setIssuer(APP)
                 .setAudience(APP_ADMINISTRATION)
-                .setSubject(userDetails.getUsername())
+                .setSubject(appUser.getEmail())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_PERIOD))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)

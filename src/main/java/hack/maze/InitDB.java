@@ -21,10 +21,31 @@ public class InitDB {
     private final PageRepo pageRepo;
     private final QuestionRepo questionRepo;
     private final PasswordEncoder passwordEncoder;
+    private final BadgeRepo badgeRepo;
+    private final TagRepo tagRepo;
+    private final ProfileMazeProgressRepo profileMazeProgressRepo;
+    private final ProfilePageProgressRepo profilePageProgressRepo;
+    private final ProfileQuestionProgressRepo profileQuestionProgressRepo;
+
 
     @Bean
     CommandLineRunner commandLineRunner() {
         return args -> {
+
+            // create badge
+            Badge savedBadge = badgeRepo.save(Badge
+                    .builder()
+                    .title("badge1")
+                    .image("image")
+                    .build());
+
+            // create tag
+            Tag savedTag = tagRepo.save(Tag
+                    .builder()
+                    .title("tag1")
+                    .build());
+
+            // create appUser
             AppUser savedUser = userRepo.save(AppUser
                     .builder()
                     .email("user1@user1.user1")
@@ -33,6 +54,8 @@ public class InitDB {
                     .role(Role.USER)
                     .createdAt(LocalDateTime.now())
                     .build());
+
+            // create profile
             Profile savedProfile = profileRepo.save(Profile
                     .builder()
                     .appUser(savedUser)
@@ -45,7 +68,10 @@ public class InitDB {
                     .linkedinLink("linkedinLink")
                     .image("image")
                     .rank(100.0)
+                    .badges(List.of(savedBadge))
                     .build());
+
+            // create maze
             Maze savedMaze = mazeRepo.save(Maze
                     .builder()
                     .createdAt(LocalDateTime.now())
@@ -58,7 +84,10 @@ public class InitDB {
                     .title("title")
                     .enrolledUsers(List.of(savedProfile))
                     .solvers(List.of(savedProfile))
+                    .tags(List.of(savedTag))
                     .build());
+
+            // create page
             Page savedPage = pageRepo.save(Page
                     .builder()
                     .title("title")
@@ -67,13 +96,37 @@ public class InitDB {
                     .maze(savedMaze)
                     .build());
 
-            questionRepo.save(Question
+            // create question
+            Question savedQuestion = questionRepo.save(Question
                     .builder()
                     .type("type")
                     .content("content")
                     .answer("answer")
                     .page(savedPage)
                     .build());
+
+            // create user progress
+            profileMazeProgressRepo.save(ProfileMazeProgress
+                    .builder()
+                    .profile(savedProfile)
+                    .isCompleted(false)
+                    .maze(savedMaze)
+                    .build());
+            ProfilePageProgress savedProfilePageProgress = profilePageProgressRepo.save(ProfilePageProgress
+                    .builder()
+                    .page(savedPage)
+                    .profile(savedProfile)
+                    .isCompleted(false)
+                    .build());
+            profileQuestionProgressRepo.save(ProfileQuestionProgress
+                    .builder()
+                    .question(savedQuestion)
+                    .isCompleted(true)
+                    .profilePageProgress(savedProfilePageProgress)
+                    .build());
+
+
+
         };
     }
 

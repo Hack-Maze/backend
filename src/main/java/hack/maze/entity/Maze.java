@@ -1,19 +1,7 @@
 package hack.maze.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Transient;
+import com.fasterxml.jackson.annotation.*;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,9 +28,6 @@ public class Maze {
     private boolean visibility;
     private String image;
 
-    @Transient
-    private String authorName;
-
     @Enumerated(EnumType.STRING)
     private Difficulty difficulty;
 
@@ -51,7 +36,7 @@ public class Maze {
             name = "maze_profile_enrollment",
             joinColumns = @JoinColumn(name = "maze_id"),
             inverseJoinColumns = @JoinColumn(name = "profile_id"))
-    @JsonManagedReference
+    @JsonIgnore
     private List<Profile> enrolledUsers;
 
     @ManyToMany
@@ -59,6 +44,7 @@ public class Maze {
             name = "maze_profile_solvers",
             joinColumns = @JoinColumn(name = "maze_id"),
             inverseJoinColumns = @JoinColumn(name = "profile_id"))
+    @JsonIgnore
     private List<Profile> solvers;
 
     @ManyToMany
@@ -71,14 +57,16 @@ public class Maze {
 
     @ManyToOne
     @JoinColumn(name = "author_id", referencedColumnName = "id")
-    @JsonBackReference
+    @JsonManagedReference
     private Profile author;
 
-    @OneToMany(mappedBy = "maze")
+    @OneToMany(mappedBy = "maze", cascade = CascadeType.REMOVE)
     @JsonManagedReference
     private List<Page> pages;
 
-    public String getAuthorName() {
-        return author.getAppUser().getUsername();
-    }
+    @OneToMany(mappedBy = "maze", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private List<ProfileMazeProgress> profileMazeProgresses;
+
+
 }

@@ -8,16 +8,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Entity
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserProgress {
-
+public class ProfileMazeProgress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,12 +24,9 @@ public class UserProgress {
     @JsonBackReference
     private Profile profile;
 
-    @OneToMany
-    private List<ProfileMaze> activeMazes;
+    @ManyToOne
+    @JoinColumn(name = "maze_id")
+    private Maze maze;
 
-    @OneToMany
-    private List<ProfileQuestion> activeQuestions;
-
-    @OneToMany
-    private List<ProfilePage> activePages;
+    private boolean isCompleted;
 }
