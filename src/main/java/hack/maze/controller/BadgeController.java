@@ -34,7 +34,7 @@ public class BadgeController {
     }
 
     @PutMapping("/{badgeId}")
-    public ResponseEntity<?> updateBadge(@PathVariable long badgeId, @RequestBody BadgeDTO badgeDTO) {
+    public ResponseEntity<?> updateBadge(@PathVariable long badgeId, @ModelAttribute BadgeDTO badgeDTO) {
         try {
             return ResponseEntity.ok(badgeService.updateBadge(badgeId, badgeDTO));
         } catch (Exception e) {
