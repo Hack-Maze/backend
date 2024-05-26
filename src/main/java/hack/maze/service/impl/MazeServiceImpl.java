@@ -3,6 +3,7 @@ package hack.maze.service.impl;
 import hack.maze.dto.CreateMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
+import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.entity.AppUser;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Tag;
@@ -13,6 +14,7 @@ import hack.maze.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
@@ -42,8 +44,6 @@ public class MazeServiceImpl implements MazeService {
     private Maze fillMazeInfo(CreateMazeDTO createMazeDTO) {
         return Maze
                 .builder()
-                .tags(getTagsFromListOfTagIds(createMazeDTO.tagIds()))
-                .image(sendImageToAzure(createMazeDTO.image()))
                 .visibility(true)
                 .title(createMazeDTO.title())
                 .description(createMazeDTO.description())
@@ -68,8 +68,6 @@ public class MazeServiceImpl implements MazeService {
         Objects.requireNonNull(createMazeDTO.title());
         Objects.requireNonNull(createMazeDTO.description());
         Objects.requireNonNull(createMazeDTO.summary());
-        Objects.requireNonNull(createMazeDTO.tagIds());
-        Objects.requireNonNull(createMazeDTO.image());
     }
 
     @Override
@@ -94,6 +92,31 @@ public class MazeServiceImpl implements MazeService {
         mazeRepo.deleteById(maze.getId());
         log.warn("maze with id = [{}] will be deleted completely", mazeId);
         return "Maze with id = [" + mazeId + "] deleted successfully";
+    }
+
+    @Override
+    @Transactional
+    public String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) {
+        Maze maze = _getSingleMaze(mazeId);
+        if (updateMazeDTO.title() != null) {
+            maze.setTitle(updateMazeDTO.title());
+        }
+        if (updateMazeDTO.summary() != null) {
+            maze.setSummary(updateMazeDTO.summary());
+        }
+        if (updateMazeDTO.description() != null) {
+            maze.setDescription(updateMazeDTO.description());
+        }
+        if (updateMazeDTO.tagIds() != null) {
+            maze.setTags(getTagsFromListOfTagIds(updateMazeDTO.tagIds()));
+        }
+        if (updateMazeDTO.image() != null) {
+            maze.setImage(sendImageToAzure(updateMazeDTO.image()));
+        }
+        if (updateMazeDTO.difficulty() != null) {
+            maze.setDifficulty(updateMazeDTO.difficulty());
+        }
+        return "maze with id = [" + mazeId + "] updated successfully";
     }
 
     private void checkUserAuthority(String currentUsername, Maze targetMaze) throws AccessDeniedException {
