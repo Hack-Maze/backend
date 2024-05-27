@@ -15,7 +15,7 @@ public class ProfileController {
     private final ProfileService profileService;
 
     @PutMapping("/update")
-    public ResponseEntity<?> updateProfileInfo(@RequestBody CreateProfileDTO createProfileDTO) {
+    public ResponseEntity<?> updateProfileInfo(@ModelAttribute CreateProfileDTO createProfileDTO) {
         try {
             return ResponseEntity.ok(profileService.updateProfileDate(createProfileDTO));
         } catch (Exception e) {
