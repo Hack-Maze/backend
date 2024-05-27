@@ -14,11 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-import static hack.maze.constant.ApplicationConstant.SOLVE_POINTS;
 import static hack.maze.utils.GlobalMethods.nullMsg;
 
 @Service
@@ -28,9 +26,6 @@ public class PageServiceImpl implements PageService {
 
     private final PageRepo pageRepo;
     private final MazeService mazeService;
-    private final ProfilePageProgressService profilePageProgressService;
-    private final QuestionService questionService;
-    private final ProfileQuestionProgressRepo profileQuestionProgressRepo;
 
     @Override
     public String createPage(long mazeId, Page page) {

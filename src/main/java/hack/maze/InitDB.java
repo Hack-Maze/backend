@@ -121,7 +121,6 @@ public class InitDB {
             profileQuestionProgressRepo.save(ProfileQuestionProgress
                     .builder()
                     .question(savedQuestion)
-                    .isCompleted(true)
                     .profilePageProgress(savedProfilePageProgress)
                     .build());
 
