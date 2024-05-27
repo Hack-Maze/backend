@@ -1,7 +1,6 @@
 package hack.maze.dto;
 
 import hack.maze.entity.Difficulty;
-import hack.maze.entity.Page;
 import hack.maze.entity.Tag;
 import lombok.Builder;
 

@@ -1,6 +1,5 @@
 package hack.maze.filter;
 
-import hack.maze.repository.UserRepo;
 import hack.maze.service.UserService;
 import hack.maze.utils.JwtUtils;
 import jakarta.servlet.FilterChain;
@@ -16,7 +15,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import static hack.maze.config.UserContext.*;
+import static hack.maze.config.UserContext.clearContext;
+import static hack.maze.config.UserContext.setCurrentUser;
 import static hack.maze.constant.SecurityConstant.TOKEN_PREFIX;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 

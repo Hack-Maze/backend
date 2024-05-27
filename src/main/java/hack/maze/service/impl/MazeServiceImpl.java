@@ -1,18 +1,14 @@
 package hack.maze.service.impl;
 
-import hack.maze.config.UserContext;
 import hack.maze.dto.CreateMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.entity.Maze;
-import hack.maze.entity.Profile;
-import hack.maze.entity.ProfileMazeProgress;
 import hack.maze.entity.Tag;
 import hack.maze.repository.MazeRepo;
 import hack.maze.service.AzureService;
 import hack.maze.service.MazeService;
-import hack.maze.service.ProfileMazeProgressService;
 import hack.maze.service.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +35,6 @@ public class MazeServiceImpl implements MazeService {
     private final MazeRepo mazeRepo;
     private final TagService tagService;
     private final AzureService azureService;
-    private final ProfileMazeProgressService profileMazeProgressService;
 
     @Override
     public String createMaze(CreateMazeDTO createMazeDTO) {

@@ -38,7 +38,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public AuthenticationResponseDTO register(RegisterDTO request, HttpServletResponse response) throws Exception {
+    public AuthenticationResponseDTO register(RegisterDTO request, HttpServletResponse response) {
         checkIfUserWithUsernameExists(request.username());
         checkIfUserWithEmailExists(request.email());
         AppUser appUser = AppUser

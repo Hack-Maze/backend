@@ -1,7 +1,6 @@
 package hack.maze.controller;
 
 import hack.maze.dto.PageRequestDTO;
-import hack.maze.entity.Page;
 import hack.maze.service.PageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,6 +1,5 @@
 package hack.maze.filter;
 
-import hack.maze.config.UserContext;
 import hack.maze.utils.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

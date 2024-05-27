@@ -1,9 +1,20 @@
 package hack.maze.service.impl;
 
 import hack.maze.config.UserContext;
-import hack.maze.entity.*;
+import hack.maze.entity.Maze;
+import hack.maze.entity.Page;
+import hack.maze.entity.Profile;
+import hack.maze.entity.ProfileMazeProgress;
+import hack.maze.entity.ProfilePageProgress;
+import hack.maze.entity.ProfileQuestionProgress;
+import hack.maze.entity.Question;
 import hack.maze.repository.ProfileQuestionProgressRepo;
-import hack.maze.service.*;
+import hack.maze.service.MazeService;
+import hack.maze.service.PageService;
+import hack.maze.service.ProfileMazeProgressService;
+import hack.maze.service.ProfilePageProgressService;
+import hack.maze.service.ProgressService;
+import hack.maze.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

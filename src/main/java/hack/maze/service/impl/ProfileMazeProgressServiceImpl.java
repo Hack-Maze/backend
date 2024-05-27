@@ -1,6 +1,5 @@
 package hack.maze.service.impl;
 
-import hack.maze.config.UserContext;
 import hack.maze.entity.ProfileMazeProgress;
 import hack.maze.exceptions.ResourceAlreadyExistException;
 import hack.maze.repository.ProfileMazeProgressRepo;
