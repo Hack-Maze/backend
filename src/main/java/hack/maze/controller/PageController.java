@@ -1,5 +1,6 @@
 package hack.maze.controller;
 
+import hack.maze.dto.PageRequestDTO;
 import hack.maze.entity.Page;
 import hack.maze.service.PageService;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class PageController {
     }
 
     @PostMapping("/{mazeId}")
-    public ResponseEntity<?> createPage(@PathVariable long mazeId, @RequestBody Page page) {
+    public ResponseEntity<?> createPage(@PathVariable long mazeId, @RequestBody PageRequestDTO page) {
         try {
             return ResponseEntity.ok(pageService.createPage(mazeId, page));
         } catch (Exception e) {
@@ -49,7 +50,7 @@ public class PageController {
     }
 
     @PutMapping("/update/{pageId}")
-    public ResponseEntity<?> updatePage(@PathVariable long pageId, @RequestBody Page page) {
+    public ResponseEntity<?> updatePage(@PathVariable long pageId, @RequestBody PageRequestDTO page) {
         try {
             return ResponseEntity.ok(pageService.updatePage(pageId, page));
         } catch (Exception e) {

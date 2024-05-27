@@ -2,6 +2,7 @@ package hack.maze.service.impl;
 
 import hack.maze.config.UserContext;
 import hack.maze.constant.ApplicationConstant;
+import hack.maze.dto.PageRequestDTO;
 import hack.maze.entity.*;
 import hack.maze.repository.PageRepo;
 import hack.maze.repository.ProfileQuestionProgressRepo;
@@ -28,18 +29,27 @@ public class PageServiceImpl implements PageService {
     private final MazeService mazeService;
 
     @Override
-    public String createPage(long mazeId, Page page) {
-        validatePageInfo(page);
+    public String createPage(long mazeId, PageRequestDTO pageRequestDTO) {
+        validatePageInfo(pageRequestDTO);
         Maze maze = mazeService._getSingleMaze(mazeId);
-        page.setMaze(maze);
-        pageRepo.save(page);
-        return "page with title = [" + page.getTitle() + "] added successfully to maze with title = [" + maze.getTitle() + "]";
+        pageRepo.save(fillPageInfo(pageRequestDTO, maze));
+        return "page with title = [" + pageRequestDTO.title() + "] added successfully to maze with title = [" + maze.getTitle() + "]";
     }
 
-    private void validatePageInfo(Page page) {
-        Objects.requireNonNull(page.getTitle(), nullMsg("title"));
-        Objects.requireNonNull(page.getDescription(), nullMsg("description"));
-        Objects.requireNonNull(page.getContent(), nullMsg("content"));
+    private Page fillPageInfo(PageRequestDTO pageRequestDTO, Maze maze) {
+        return Page
+                .builder()
+                .title(pageRequestDTO.title())
+                .description(pageRequestDTO.description())
+                .content(pageRequestDTO.content())
+                .maze(maze)
+                .build();
+    }
+
+    private void validatePageInfo(PageRequestDTO page) {
+        Objects.requireNonNull(page.title(), nullMsg("title"));
+        Objects.requireNonNull(page.description(), nullMsg("description"));
+        Objects.requireNonNull(page.content(), nullMsg("content"));
     }
 
     @Override
@@ -54,16 +64,16 @@ public class PageServiceImpl implements PageService {
 
     @Override
     @Transactional
-    public String updatePage(long pageId, Page page) {
+    public String updatePage(long pageId, PageRequestDTO pageRequestDTO) {
         Page taragetPage = getSinglePage(pageId);
-        if (page.getTitle() != null) {
-            taragetPage.setTitle(page.getTitle());
+        if (pageRequestDTO.title() != null) {
+            taragetPage.setTitle(pageRequestDTO.title());
         }
-        if (page.getContent() != null) {
-            taragetPage.setContent(page.getContent());
+        if (pageRequestDTO.content() != null) {
+            taragetPage.setContent(pageRequestDTO.content());
         }
-        if (page.getDescription() != null) {
-            taragetPage.setDescription(page.getDescription());
+        if (pageRequestDTO.description() != null) {
+            taragetPage.setDescription(pageRequestDTO.description());
         }
 
         return "Page with id = [" + pageId + "] updated successfully";
