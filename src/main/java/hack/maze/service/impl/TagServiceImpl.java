@@ -1,5 +1,6 @@
 package hack.maze.service.impl;
 
+import hack.maze.dto.TagDTO;
 import hack.maze.entity.Tag;
 import hack.maze.repository.TagRepo;
 import hack.maze.service.TagService;
@@ -21,14 +22,16 @@ public class TagServiceImpl implements TagService {
     private final TagRepo tagRepo;
 
     @Override
-    public String createTag(Tag tag) {
-        validateTagInfo(tag);
+    public String createTag(TagDTO tagDTO) {
+        validateTagInfo(tagDTO);
+        Tag tag = new Tag();
+        tag.setTitle(tagDTO.title());
         tagRepo.save(tag);
         return "new tag with title = [" + tag.getTitle() + "] created successfully";
     }
 
-    private void validateTagInfo(Tag tag) {
-        Objects.requireNonNull(tag.getTitle(), nullMsg("title"));
+    private void validateTagInfo(TagDTO tagDTO) {
+        Objects.requireNonNull(tagDTO.title(), nullMsg("title"));
     }
 
     @Override
@@ -38,10 +41,10 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public String updateTag(long tagId, Tag tag) {
+    public String updateTag(long tagId, TagDTO tagDTO) {
         Tag targetTag = getSingleTag(tagId);
-        if (tag.getTitle() != null) {
-            targetTag.setTitle(tag.getTitle());
+        if (tagDTO.title() != null) {
+            targetTag.setTitle(tagDTO.title());
         }
         return "Tag with id = [" + tagId + "] updated successfully";
     }

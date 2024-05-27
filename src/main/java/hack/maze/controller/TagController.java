@@ -1,5 +1,6 @@
 package hack.maze.controller;
 
+import hack.maze.dto.TagDTO;
 import hack.maze.entity.Tag;
 import hack.maze.service.TagService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class TagController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createTag(@RequestBody Tag tag) {
+    public ResponseEntity<?> createTag(@RequestBody TagDTO tag) {
         try {
             return ResponseEntity.ok(tagService.createTag(tag));
         } catch (Exception e) {
@@ -40,7 +41,7 @@ public class TagController {
     }
 
     @PutMapping("/{tagId}")
-    public ResponseEntity<?> updateTag(@PathVariable long tagId, @RequestBody Tag tag) {
+    public ResponseEntity<?> updateTag(@PathVariable long tagId, @RequestBody TagDTO tag) {
         try {
             return ResponseEntity.ok(tagService.updateTag(tagId, tag));
         } catch (Exception e) {
