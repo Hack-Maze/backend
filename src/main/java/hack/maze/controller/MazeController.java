@@ -55,7 +55,7 @@ public class MazeController {
     }
 
     @PutMapping("/{mazeId}")
-    public ResponseEntity<?> updateMaze(@PathVariable long mazeId, @RequestBody UpdateMazeDTO updateMazeDTO) {
+    public ResponseEntity<?> updateMaze(@PathVariable long mazeId, @ModelAttribute UpdateMazeDTO updateMazeDTO) {
         try {
             return ResponseEntity.ok(mazeService.updateMaze(mazeId, updateMazeDTO));
         } catch (Exception e) {
