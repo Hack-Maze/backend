@@ -1,8 +1,6 @@
 package hack.maze.mapper;
 
-import hack.maze.dto.MazeResponseDTO;
-import hack.maze.dto.MazeSimpleDTO;
-import hack.maze.dto.ProfileResponseDTO;
+import hack.maze.dto.*;
 import hack.maze.entity.AppUser;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Profile;
@@ -72,6 +70,15 @@ public class MazeMapper {
                 .personalWebsite(profile.getPersonalWebsite())
                 .job(profile.getJob())
                 .lastQuestionSolvedAt(profile.getLastQuestionSolvedAt())
+                .build();
+    }
+
+    public static MazeProgressDTO fromMazeToMazeProgressDTO(Maze maze) {
+        return MazeProgressDTO
+                .builder()
+                .id(maze.getId())
+                .title(maze.getTitle())
+                .image(maze.getImage())
                 .build();
     }
 

@@ -1,6 +1,8 @@
 package hack.maze.service.impl;
 
 import hack.maze.config.UserContext;
+import hack.maze.dto.ProfileMazeProgressDTO;
+import hack.maze.dto.ProfilePageProgressDTO;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Page;
 import hack.maze.entity.Profile;
@@ -8,6 +10,8 @@ import hack.maze.entity.ProfileMazeProgress;
 import hack.maze.entity.ProfilePageProgress;
 import hack.maze.entity.ProfileQuestionProgress;
 import hack.maze.entity.Question;
+import hack.maze.mapper.ProfileMazeProgressMapper;
+import hack.maze.mapper.ProfilePageProgressMapper;
 import hack.maze.repository.ProfileQuestionProgressRepo;
 import hack.maze.service.MazeService;
 import hack.maze.service.PageService;
@@ -24,6 +28,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static hack.maze.constant.ApplicationConstant.SOLVE_POINTS;
+import static hack.maze.mapper.ProfileMazeProgressMapper.*;
+import static hack.maze.mapper.ProfilePageProgressMapper.fromProfilePageProgressToProfilePageProgressDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -86,12 +92,12 @@ public class ProgressServiceImpl implements ProgressService {
     }
 
     @Override
-    public List<ProfileMazeProgress> getProfileMazesProgress() {
-        return profileMazeProgressService.getProfileMazesProgressByProfileId(UserContext.getCurrentUser().getProfile().getId());
+    public List<ProfileMazeProgressDTO> getProfileMazesProgress() {
+        return fromProfileMazeProgressToProfileMazeProgressDTO(profileMazeProgressService.getProfileMazesProgressByProfileId(UserContext.getCurrentUser().getProfile().getId()));
     }
 
     @Override
-    public List<ProfilePageProgress> getProfilePagesProgress() {
-        return profilePageProgressService.getProfilePagesProgressByProfileId(UserContext.getCurrentUser().getProfile().getId());
+    public List<ProfilePageProgressDTO> getProfilePagesProgress() {
+        return fromProfilePageProgressToProfilePageProgressDTO(profilePageProgressService.getProfilePagesProgressByProfileId(UserContext.getCurrentUser().getProfile().getId()));
     }
 }

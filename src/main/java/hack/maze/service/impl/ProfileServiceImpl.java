@@ -79,7 +79,8 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public List<MazeSimpleDTO> getAllProfileCreatedMazes() {
-        return fromMazeToMazeSimpleDTO(getCurrentUser().getProfile().getCreatedMazes());
+        Profile profile = _getSingleProfile(getCurrentUser().getUsername());
+        return fromMazeToMazeSimpleDTO(profile.getCreatedMazes());
     }
 
 }

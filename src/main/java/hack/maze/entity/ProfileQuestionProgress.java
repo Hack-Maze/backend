@@ -1,5 +1,6 @@
 package hack.maze.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -33,5 +34,6 @@ public class ProfileQuestionProgress {
 
     @ManyToOne
     @JoinColumn(name = "profile_page_progress_id", referencedColumnName = "id")
+    @JsonBackReference
     private ProfilePageProgress profilePageProgress;
 }
