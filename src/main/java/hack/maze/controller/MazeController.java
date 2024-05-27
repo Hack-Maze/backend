@@ -1,6 +1,7 @@
 package hack.maze.controller;
 
 import hack.maze.dto.CreateMazeDTO;
+import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.repository.MazeRepo;
 import hack.maze.service.MazeService;
 import lombok.RequiredArgsConstructor;
@@ -52,5 +53,15 @@ public class MazeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @PutMapping("/{mazeId}")
+    public ResponseEntity<?> updateMaze(@PathVariable long mazeId, @RequestBody UpdateMazeDTO updateMazeDTO) {
+        try {
+            return ResponseEntity.ok(mazeService.updateMaze(mazeId, updateMazeDTO));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 
 }
