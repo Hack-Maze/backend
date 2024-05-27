@@ -1,6 +1,7 @@
 package hack.maze.service.impl;
 
 import hack.maze.dto.CreateProfileDTO;
+import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.ProfileResponseDTO;
 import hack.maze.entity.Profile;
 import hack.maze.repository.ProfileRepo;
@@ -11,7 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static hack.maze.config.UserContext.getCurrentUser;
+import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
 import static hack.maze.mapper.MazeMapper.fromProfileToProfileResponseDTO;
 
 @Service
@@ -71,6 +75,11 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public ProfileResponseDTO getSingleProfile(String username) {
         return fromProfileToProfileResponseDTO(_getSingleProfile(username));
+    }
+
+    @Override
+    public List<MazeSimpleDTO> getAllProfileCreatedMazes() {
+        return fromMazeToMazeSimpleDTO(getCurrentUser().getProfile().getCreatedMazes());
     }
 
 }

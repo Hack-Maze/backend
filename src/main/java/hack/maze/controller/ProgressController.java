@@ -40,5 +40,22 @@ public class ProgressController {
         }
     }
 
+    @GetMapping("/get-profile-maze-progress")
+    public ResponseEntity<?> getProfileMazesProgress() {
+        try {
+            return ResponseEntity.ok(progressService.getProfileMazesProgress());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/get-profile-page-progress")
+    public ResponseEntity<?> getProfilePagesProgress() {
+        try {
+            return ResponseEntity.ok(progressService.getProfilePagesProgress());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
 }

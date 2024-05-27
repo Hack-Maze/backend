@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -26,5 +28,10 @@ public class ProfileMazeProgressServiceImpl implements ProfileMazeProgressServic
     public String createNewProfileMazeProgress(ProfileMazeProgress profileMazeProgress) {
         profileMazeProgressRepo.save(profileMazeProgress);
         return "Profile progress updated successfully";
+    }
+
+    @Override
+    public List<ProfileMazeProgress> getProfileMazesProgressByProfileId(long profileId) {
+        return profileMazeProgressRepo.getProfileMazesProgressByProfileId(profileId);
     }
 }

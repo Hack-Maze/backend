@@ -8,10 +8,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ProfilePageProgressServiceImpl implements ProfilePageProgressService {
+public class
+ProfilePageProgressServiceImpl implements ProfilePageProgressService {
 
     private final ProfilePageProgressRepo profilePageProgressRepo;
 
@@ -31,5 +34,10 @@ public class ProfilePageProgressServiceImpl implements ProfilePageProgressServic
     @Override
     public ProfilePageProgress getUserPageProgress(long profileId, long pageId) {
         return profilePageProgressRepo.findByProfileIdAndPageId(profileId, pageId).orElseThrow(() -> new RuntimeException("You should add your progress in this Page first!"));
+    }
+
+    @Override
+    public List<ProfilePageProgress> getProfilePagesProgressByProfileId(long profileId) {
+        return profilePageProgressRepo.getProfilePagesProgressByProfileId(profileId);
     }
 }

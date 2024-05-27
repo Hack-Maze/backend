@@ -45,4 +45,14 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @GetMapping("/created-mazes")
+    public ResponseEntity<?> getAllProfileCreatedMazes() {
+        try {
+            return ResponseEntity.ok(profileService.getAllProfileCreatedMazes());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 }

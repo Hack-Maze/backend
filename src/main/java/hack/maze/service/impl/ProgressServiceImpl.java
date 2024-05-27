@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static hack.maze.constant.ApplicationConstant.SOLVE_POINTS;
 
@@ -82,5 +83,15 @@ public class ProgressServiceImpl implements ProgressService {
         profile.setLastQuestionSolvedAt(savedProfileQuestionProgress.getSolvedAt());
         profile.setRank(profile.getRank() + SOLVE_POINTS);
         return "User progress updated successfully";
+    }
+
+    @Override
+    public List<ProfileMazeProgress> getProfileMazesProgress() {
+        return profileMazeProgressService.getProfileMazesProgressByProfileId(UserContext.getCurrentUser().getProfile().getId());
+    }
+
+    @Override
+    public List<ProfilePageProgress> getProfilePagesProgress() {
+        return profilePageProgressService.getProfilePagesProgressByProfileId(UserContext.getCurrentUser().getProfile().getId());
     }
 }
