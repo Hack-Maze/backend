@@ -4,10 +4,7 @@ import hack.maze.service.ProgressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/progress")
@@ -17,7 +14,7 @@ public class ProgressController {
     private final ProgressService progressService;
 
     @PostMapping("/enroll-user-to-maze/{mazeId}")
-    public ResponseEntity<?> enrollUserToMaze(@RequestParam long mazeId) {
+    public ResponseEntity<?> enrollUserToMaze(@PathVariable long mazeId) {
         try {
             return ResponseEntity.ok(progressService.enrollUserToMaze(mazeId));
         } catch (Exception e) {
@@ -26,7 +23,7 @@ public class ProgressController {
     }
 
     @PostMapping("/record-user-to-page/{pageId}")
-    public ResponseEntity<?> recordUserProgressInPage(@RequestParam long pageId) {
+    public ResponseEntity<?> recordUserProgressInPage(@PathVariable long pageId) {
         try {
             return ResponseEntity.ok(progressService.recordUserProgressInPage(pageId));
         } catch (Exception e) {
@@ -35,7 +32,7 @@ public class ProgressController {
     }
 
     @PostMapping("/solve-question/{pageId}/{solvedQuestionId}")
-    public ResponseEntity<?> solveQuestion(@RequestParam long pageId, @RequestParam long solvedQuestionId) {
+    public ResponseEntity<?> solveQuestion(@PathVariable long pageId, @PathVariable long solvedQuestionId) {
         try {
             return ResponseEntity.ok(progressService.solveQuestion(pageId, solvedQuestionId));
         } catch (Exception e) {
