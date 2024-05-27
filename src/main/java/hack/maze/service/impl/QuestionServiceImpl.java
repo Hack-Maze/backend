@@ -1,5 +1,6 @@
 package hack.maze.service.impl;
 
+import hack.maze.dto.QuestionDTO;
 import hack.maze.entity.Page;
 import hack.maze.entity.Question;
 import hack.maze.repository.QuestionRepo;
@@ -10,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Objects;
 
 import static hack.maze.utils.GlobalMethods.nullMsg;
@@ -24,23 +24,29 @@ public class QuestionServiceImpl implements QuestionService {
     private final PageService pageService;
 
     @Override
-    public String createQuestion(long pageId, Question question) {
-        validateQuestionInfo(question);
+    public String createQuestion(long pageId, QuestionDTO questionDTO) {
+        validateQuestionInfo(questionDTO);
         Page page = pageService.getSinglePage(pageId);
-        question.setPage(page);
+        questionRepo.save(fillQuestionInfo(questionDTO, page));
         return "Question created Successfully";
     }
 
-    private void validateQuestionInfo(Question question) {
-        Objects.requireNonNull(question.getContent(), nullMsg("content"));
-        Objects.requireNonNull(question.getAnswer(), nullMsg("answer"));
-        Objects.requireNonNull(question.getHint(), nullMsg("hint"));
-        Objects.requireNonNull(question.getType(), nullMsg("type"));
+    private Question fillQuestionInfo(QuestionDTO questionDTO, Page page) {
+        return Question
+                .builder()
+                .type(questionDTO.type())
+                .content(questionDTO.content())
+                .answer(questionDTO.answer())
+                .hint(questionDTO.hint())
+                .page(page)
+                .build();
     }
 
-    @Override
-    public List<Question> getAllQuestions() {
-        return questionRepo.findAll();
+    private void validateQuestionInfo(QuestionDTO questionDTO) {
+        Objects.requireNonNull(questionDTO.content(), nullMsg("content"));
+        Objects.requireNonNull(questionDTO.answer(), nullMsg("answer"));
+        Objects.requireNonNull(questionDTO.hint(), nullMsg("hint"));
+        Objects.requireNonNull(questionDTO.type(), nullMsg("type"));
     }
 
     @Override
@@ -50,19 +56,19 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public String updateQuestion(long questionId, Question question) {
+    public String updateQuestion(long questionId, QuestionDTO questionDTO) {
         Question targetQuestion = getSingleQuestion(questionId);
-        if (question.getContent() != null) {
-            targetQuestion.setContent(question.getContent());
+        if (questionDTO.content() != null) {
+            targetQuestion.setContent(questionDTO.content());
         }
-        if (question.getAnswer() != null) {
-            targetQuestion.setAnswer(question.getAnswer());
+        if (questionDTO.answer() != null) {
+            targetQuestion.setAnswer(questionDTO.answer());
         }
-        if (question.getHint() != null) {
-            targetQuestion.setHint(question.getHint());
+        if (questionDTO.hint() != null) {
+            targetQuestion.setHint(questionDTO.hint());
         }
-        if (question.getType() != null) {
-            targetQuestion.setType(question.getType());
+        if (questionDTO.type() != null) {
+            targetQuestion.setType(questionDTO.type());
         }
         return "Question with id = [" + questionId + "] updated successfully";
     }

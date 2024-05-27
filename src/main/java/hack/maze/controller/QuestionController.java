@@ -1,5 +1,6 @@
 package hack.maze.controller;
 
+import hack.maze.dto.QuestionDTO;
 import hack.maze.entity.Question;
 import hack.maze.service.QuestionService;
 import lombok.RequiredArgsConstructor;
@@ -21,15 +22,6 @@ public class QuestionController {
 
     private final QuestionService questionService;
 
-    @GetMapping
-    public ResponseEntity<?> getAllQuestions() {
-        try {
-            return ResponseEntity.ok(questionService.getAllQuestions());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
     @GetMapping("/{questionId}")
     public ResponseEntity<?> getSingleQuestion(@PathVariable long questionId) {
         try {
@@ -40,18 +32,18 @@ public class QuestionController {
     }
 
     @PostMapping("/{pageId}")
-    public ResponseEntity<?> createQuestion(@PathVariable long pageId, @RequestBody Question page) {
+    public ResponseEntity<?> createQuestion(@PathVariable long pageId, @RequestBody QuestionDTO questionDTO) {
         try {
-            return ResponseEntity.ok(questionService.createQuestion(pageId, page));
+            return ResponseEntity.ok(questionService.createQuestion(pageId, questionDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
     @PutMapping("/update/{questionId}")
-    public ResponseEntity<?> updateQuestion(@PathVariable long questionId, @RequestBody Question page) {
+    public ResponseEntity<?> updateQuestion(@PathVariable long questionId, @RequestBody QuestionDTO questionDTO) {
         try {
-            return ResponseEntity.ok(questionService.updateQuestion(questionId, page));
+            return ResponseEntity.ok(questionService.updateQuestion(questionId, questionDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
