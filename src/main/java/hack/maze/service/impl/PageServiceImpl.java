@@ -43,8 +43,8 @@ public class PageServiceImpl implements PageService {
     }
 
     @Override
-    public List<Page> getAllPages() {
-        return pageRepo.findAll();
+    public List<Page> getAllPagesInSpecificMaze(long mazeId) {
+        return pageRepo.getAllPagesInSpecificMaze(mazeId);
     }
 
     @Override

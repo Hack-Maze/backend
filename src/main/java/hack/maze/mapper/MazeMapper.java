@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static hack.maze.mapper.PageMapper.fromPageToMazePageDTO;
 import static hack.maze.mapper.ProfileMapper.fromProfileToMazeProfileDTO;
 
 @Slf4j
@@ -35,7 +36,7 @@ public class MazeMapper {
                 .enrolledUsers(fromProfileToMazeProfileDTO(maze.getEnrolledUsers()))
                 .solvers(fromProfileToMazeProfileDTO(maze.getSolvers()))
                 .tags(maze.getTags())
-                .pages(maze.getPages())
+                .pages(fromPageToMazePageDTO(maze.getPages()))
                 .build();
     }
 

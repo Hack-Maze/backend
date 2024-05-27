@@ -12,5 +12,5 @@ import java.util.List;
 public record MazeResponseDTO(Long id, String title, String description, String summary, LocalDateTime createdAt,
                               boolean visibility, String image, Difficulty difficulty, MazeProfileDTO author,
                               List<MazeProfileDTO> enrolledUsers, List<MazeProfileDTO> solvers, List<Tag> tags,
-                              List<Page> pages) {
+                              List<MazePageDTO> pages) {
 }

@@ -19,19 +19,11 @@ public class ProfileMapper {
     }
 
     public static MazeProfileDTO fromProfileToMazeProfileDTO(Profile profile) {
-        log.info("ProfileId: {}", profile.getId());
         return MazeProfileDTO
                 .builder()
                 .profileId(profile.getId())
                 .username(profile.getAppUser().getUsername())
-                .fullName(profile.getFullName())
-                .country(profile.getCountry())
-                .linkedinLink(profile.getLinkedinLink())
-                .githubLink(profile.getGithubLink())
-                .personalWebsite(profile.getPersonalWebsite())
-                .job(profile.getJob())
                 .image(profile.getImage())
-                .rank(profile.getRank())
                 .build();
     }
 

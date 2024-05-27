@@ -21,10 +21,10 @@ public class PageController {
 
     private final PageService pageService;
 
-    @GetMapping
-    public ResponseEntity<?> getAllPages() {
+    @GetMapping("/maze/{mazeId}")
+    public ResponseEntity<?> getAllPagesInSpecificMaze(@PathVariable long mazeId) {
         try {
-            return ResponseEntity.ok(pageService.getAllPages());
+            return ResponseEntity.ok(pageService.getAllPagesInSpecificMaze(mazeId));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

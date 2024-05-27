@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface PageService {
     String createPage(long mazeId, Page page);
-    List<Page> getAllPages();
+    List<Page> getAllPagesInSpecificMaze(long mazeId);
     Page getSinglePage(long pageId);
     String updatePage(long pageId, Page page);
     String deletePage(long pageId);
