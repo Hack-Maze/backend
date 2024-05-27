@@ -2,7 +2,10 @@ package hack.maze.mapper;
 
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
+import hack.maze.dto.ProfileResponseDTO;
+import hack.maze.entity.AppUser;
 import hack.maze.entity.Maze;
+import hack.maze.entity.Profile;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -49,6 +52,25 @@ public class MazeMapper {
                 .summary(maze.getSummary())
                 .description(maze.getDescription())
                 .image(maze.getImage())
+                .build();
+    }
+
+    public static ProfileResponseDTO fromProfileToProfileResponseDTO(Profile profile) {
+        AppUser appUser = profile.getAppUser();
+        return ProfileResponseDTO
+                .builder()
+                .username(appUser.getUsername())
+                .email(appUser.getEmail())
+                .fullName(profile.getFullName())
+                .country(profile.getCountry())
+                .image(profile.getImage())
+                .rank(profile.getRank())
+                .bio(profile.getBio())
+                .githubLink(profile.getGithubLink())
+                .linkedinLink(profile.getLinkedinLink())
+                .personalWebsite(profile.getPersonalWebsite())
+                .job(profile.getJob())
+                .lastQuestionSolvedAt(profile.getLastQuestionSolvedAt())
                 .build();
     }
 

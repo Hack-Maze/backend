@@ -31,7 +31,6 @@ public class ProfilePageProgress {
     @JsonManagedReference
     private List<ProfileQuestionProgress> profileQuestionProgresses;
 
-    private long totalNumberOfQuestions;
     private long numberOfSolvedQuestions;
 
     private boolean isCompleted;

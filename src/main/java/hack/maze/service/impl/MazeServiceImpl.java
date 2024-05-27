@@ -1,19 +1,23 @@
 package hack.maze.service.impl;
 
+import hack.maze.config.UserContext;
 import hack.maze.dto.CreateMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.entity.Maze;
+import hack.maze.entity.Profile;
+import hack.maze.entity.ProfileMazeProgress;
 import hack.maze.entity.Tag;
 import hack.maze.repository.MazeRepo;
+import hack.maze.service.AzureService;
 import hack.maze.service.MazeService;
+import hack.maze.service.ProfileMazeProgressService;
 import hack.maze.service.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
@@ -34,6 +38,8 @@ public class MazeServiceImpl implements MazeService {
 
     private final MazeRepo mazeRepo;
     private final TagService tagService;
+    private final AzureService azureService;
+    private final ProfileMazeProgressService profileMazeProgressService;
 
     @Override
     public String createMaze(CreateMazeDTO createMazeDTO) {
@@ -52,10 +58,6 @@ public class MazeServiceImpl implements MazeService {
                 .author(getCurrentUser().getProfile())
                 .createdAt(LocalDateTime.now())
                 .build();
-    }
-
-    private String sendImageToAzure(MultipartFile image) {
-        return "image";
     }
 
     private List<Tag> getTagsFromListOfTagIds(List<Long> tagIds) {
@@ -114,7 +116,7 @@ public class MazeServiceImpl implements MazeService {
             maze.setTags(getTagsFromListOfTagIds(updateMazeDTO.tagIds()));
         }
         if (updateMazeDTO.image() != null) {
-            maze.setImage(sendImageToAzure(updateMazeDTO.image()));
+            maze.setImage(azureService.sendImageToAzure(updateMazeDTO.image()));
         }
         if (updateMazeDTO.difficulty() != null) {
             maze.setDifficulty(updateMazeDTO.difficulty());
@@ -124,5 +126,6 @@ public class MazeServiceImpl implements MazeService {
         }
         return "maze with id = [" + mazeId + "] updated successfully";
     }
+
 
 }

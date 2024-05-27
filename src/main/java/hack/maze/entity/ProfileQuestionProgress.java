@@ -26,6 +26,4 @@ public class ProfileQuestionProgress {
     @ManyToOne
     @JoinColumn(name = "profile_page_progress_id", referencedColumnName = "id")
     private ProfilePageProgress profilePageProgress;
-
-    private boolean isCompleted;
 }
