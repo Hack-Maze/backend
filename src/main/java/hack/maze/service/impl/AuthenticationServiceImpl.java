@@ -4,8 +4,10 @@ import hack.maze.dto.AuthenticationRequestDTO;
 import hack.maze.dto.AuthenticationResponseDTO;
 import hack.maze.dto.RegisterDTO;
 import hack.maze.entity.AppUser;
+import hack.maze.entity.Profile;
 import hack.maze.entity.Role;
 import hack.maze.exceptions.UserAlreadyFoundException;
+import hack.maze.repository.ProfileRepo;
 import hack.maze.repository.UserRepo;
 import hack.maze.service.AuthenticationService;
 import hack.maze.utils.JwtUtils;
@@ -33,6 +35,7 @@ import java.util.Map;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final UserRepo userRepo;
+    private final ProfileRepo profileRepo;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
@@ -49,7 +52,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .password(passwordEncoder.encode(request.password()))
                 .createdAt(LocalDateTime.now())
                 .build();
-        userRepo.save(appUser);
+        AppUser savedUser = userRepo.save(appUser);
+        Profile profile = Profile
+                .builder()
+                .appUser(savedUser)
+                .build();
+        profileRepo.save(profile);
 
         return createTokenAndSetToHeader(request, response);
     }
