@@ -27,103 +27,105 @@ public class InitDB {
     private final ProfilePageProgressRepo profilePageProgressRepo;
     private final ProfileQuestionProgressRepo profileQuestionProgressRepo;
 
+    private void init() {
+        // create badge
+        Badge savedBadge = badgeRepo.save(Badge
+                .builder()
+                .title("badge1")
+                .image("image")
+                .build());
+
+        // create tag
+        Tag savedTag = tagRepo.save(Tag
+                .builder()
+                .title("tag1")
+                .build());
+
+        // create appUser
+        AppUser savedUser = userRepo.save(AppUser
+                .builder()
+                .email("user1@user1.user1")
+                .username("user1")
+                .password(passwordEncoder.encode("password1"))
+                .role(Role.USER)
+                .createdAt(LocalDateTime.now())
+                .build());
+
+        // create profile
+        Profile savedProfile = profileRepo.save(Profile
+                .builder()
+                .appUser(savedUser)
+                .bio("bio")
+                .country("Egypt")
+                .fullName("user1user1")
+                .githubLink("githubLink")
+                .personalWebsite("personalWebsite")
+                .job("job")
+                .linkedinLink("linkedinLink")
+                .image("image")
+                .rank(100.0)
+                .badges(List.of(savedBadge))
+                .build());
+
+        // create maze
+        Maze savedMaze = mazeRepo.save(Maze
+                .builder()
+                .createdAt(LocalDateTime.now())
+                .image("image")
+                .author(savedProfile)
+                .description("desc")
+                .difficulty(Difficulty.EASY)
+                .summary("summary")
+                .visibility(true)
+                .title("title")
+                .enrolledUsers(List.of(savedProfile))
+                .solvers(List.of(savedProfile))
+                .tags(List.of(savedTag))
+                .build());
+
+        // create page
+        Page savedPage = pageRepo.save(Page
+                .builder()
+                .title("title")
+                .content("content")
+                .description("desc")
+                .maze(savedMaze)
+                .build());
+
+        // create question
+        Question savedQuestion = questionRepo.save(Question
+                .builder()
+                .type("type")
+                .content("content")
+                .answer("answer")
+                .page(savedPage)
+                .build());
+
+        // create user progress
+        profileMazeProgressRepo.save(ProfileMazeProgress
+                .builder()
+                .profile(savedProfile)
+                .isCompleted(false)
+                .maze(savedMaze)
+                .build());
+        ProfilePageProgress savedProfilePageProgress = profilePageProgressRepo.save(ProfilePageProgress
+                .builder()
+                .page(savedPage)
+                .profile(savedProfile)
+                .isCompleted(false)
+                .build());
+        profileQuestionProgressRepo.save(ProfileQuestionProgress
+                .builder()
+                .question(savedQuestion)
+                .profilePageProgress(savedProfilePageProgress)
+                .build());
+    }
 
     @Bean
     CommandLineRunner commandLineRunner() {
         return args -> {
 
-            // create badge
-            Badge savedBadge = badgeRepo.save(Badge
-                    .builder()
-                    .title("badge1")
-                    .image("image")
-                    .build());
-
-            // create tag
-            Tag savedTag = tagRepo.save(Tag
-                    .builder()
-                    .title("tag1")
-                    .build());
-
-            // create appUser
-            AppUser savedUser = userRepo.save(AppUser
-                    .builder()
-                    .email("user1@user1.user1")
-                    .username("user1")
-                    .password(passwordEncoder.encode("password1"))
-                    .role(Role.USER)
-                    .createdAt(LocalDateTime.now())
-                    .build());
-
-            // create profile
-            Profile savedProfile = profileRepo.save(Profile
-                    .builder()
-                    .appUser(savedUser)
-                    .bio("bio")
-                    .country("Egypt")
-                    .fullName("user1user1")
-                    .githubLink("githubLink")
-                    .personalWebsite("personalWebsite")
-                    .job("job")
-                    .linkedinLink("linkedinLink")
-                    .image("image")
-                    .rank(100.0)
-                    .badges(List.of(savedBadge))
-                    .build());
-
-            // create maze
-            Maze savedMaze = mazeRepo.save(Maze
-                    .builder()
-                    .createdAt(LocalDateTime.now())
-                    .image("image")
-                    .author(savedProfile)
-                    .description("desc")
-                    .difficulty(Difficulty.EASY)
-                    .summary("summary")
-                    .visibility(true)
-                    .title("title")
-                    .enrolledUsers(List.of(savedProfile))
-                    .solvers(List.of(savedProfile))
-                    .tags(List.of(savedTag))
-                    .build());
-
-            // create page
-            Page savedPage = pageRepo.save(Page
-                    .builder()
-                    .title("title")
-                    .content("content")
-                    .description("desc")
-                    .maze(savedMaze)
-                    .build());
-
-            // create question
-            Question savedQuestion = questionRepo.save(Question
-                    .builder()
-                    .type("type")
-                    .content("content")
-                    .answer("answer")
-                    .page(savedPage)
-                    .build());
-
-            // create user progress
-            profileMazeProgressRepo.save(ProfileMazeProgress
-                    .builder()
-                    .profile(savedProfile)
-                    .isCompleted(false)
-                    .maze(savedMaze)
-                    .build());
-            ProfilePageProgress savedProfilePageProgress = profilePageProgressRepo.save(ProfilePageProgress
-                    .builder()
-                    .page(savedPage)
-                    .profile(savedProfile)
-                    .isCompleted(false)
-                    .build());
-            profileQuestionProgressRepo.save(ProfileQuestionProgress
-                    .builder()
-                    .question(savedQuestion)
-                    .profilePageProgress(savedProfilePageProgress)
-                    .build());
-
+//            init();
 
 
         };

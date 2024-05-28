@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -16,10 +17,14 @@ import java.util.Map;
 import static hack.maze.constant.ApplicationConstant.APP;
 import static hack.maze.constant.ApplicationConstant.APP_ADMINISTRATION;
 import static hack.maze.constant.SecurityConstant.EXPIRATION_PERIOD;
-import static hack.maze.constant.SecurityConstant.SECRET_KEY;
 
 @Component
 public class JwtUtils {
+
+
+    @Value("${jwt.secret.key}")
+    private String SECRET_KEY;
+
 
     public String generateToken(Map<String, Object> claims, AppUser appUser) {
         return Jwts
