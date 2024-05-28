@@ -126,8 +126,8 @@ public class InitDB {
         return args -> {
 
 //            init();
-            if (userRepo.count() < 0) {
-                userRepo.save(AppUser
+            if (userRepo.count() == 0) {
+                AppUser savedUser = userRepo.save(AppUser
                         .builder()
                         .email("admin@admin.admin")
                         .username("admin")
@@ -135,6 +135,7 @@ public class InitDB {
                         .role(Role.ADMIN)
                         .createdAt(LocalDateTime.now())
                         .build());
+                profileRepo.save(Profile.builder().appUser(savedUser).build());
             }
 
 
