@@ -58,6 +58,7 @@ public class MazeMapper {
         AppUser appUser = profile.getAppUser();
         return ProfileResponseDTO
                 .builder()
+                .id(profile.getId())
                 .username(appUser.getUsername())
                 .email(appUser.getEmail())
                 .fullName(profile.getFullName())
@@ -70,6 +71,7 @@ public class MazeMapper {
                 .personalWebsite(profile.getPersonalWebsite())
                 .job(profile.getJob())
                 .lastQuestionSolvedAt(profile.getLastQuestionSolvedAt())
+                .badges(profile.getBadges())
                 .build();
     }
 
