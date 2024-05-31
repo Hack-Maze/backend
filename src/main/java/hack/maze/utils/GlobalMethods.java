@@ -9,22 +9,22 @@ import java.util.Objects;
 
 public class GlobalMethods {
 
-    private static void checkUserAuthority(String currentUsername, String userThatWantToGainAccess) throws AccessDeniedException {
-        if (!Objects.equals(currentUsername, userThatWantToGainAccess)) {
+    private static void checkUserAuthority(Long userId, Long userThatWantToGainAccess) throws AccessDeniedException {
+        if (!Objects.equals(userId, userThatWantToGainAccess)) {
             throw new AccessDeniedException("Access denied!");
         }
     }
 
-    public static void checkUserAuthority(String username, Maze targetMaze) throws AccessDeniedException {
-        checkUserAuthority(username, targetMaze.getAuthor().getAppUser().getUsername());
+    public static void checkUserAuthority(Long id, Maze targetMaze) throws AccessDeniedException {
+        checkUserAuthority(id, targetMaze.getAuthor().getAppUser().getId());
     }
 
-    public static void checkUserAuthority(String username, Page tagetPage) throws AccessDeniedException {
-        checkUserAuthority(username, tagetPage.getMaze().getAuthor().getAppUser().getUsername());
+    public static void checkUserAuthority(Long id, Page tagetPage) throws AccessDeniedException {
+        checkUserAuthority(id, tagetPage.getMaze().getAuthor().getAppUser().getId());
     }
 
-    public static void checkUserAuthority(String username, Question targetQuestion) throws AccessDeniedException {
-        checkUserAuthority(username, targetQuestion.getPage().getMaze().getAuthor().getAppUser().getUsername());
+    public static void checkUserAuthority(Long id, Question targetQuestion) throws AccessDeniedException {
+        checkUserAuthority(id, targetQuestion.getPage().getMaze().getAuthor().getAppUser().getId());
     }
 
     public static String nullMsg(String s) {

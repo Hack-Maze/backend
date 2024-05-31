@@ -1,6 +1,5 @@
 package hack.maze.service.impl;
 
-import hack.maze.config.UserContext;
 import hack.maze.dto.QuestionDTO;
 import hack.maze.entity.Page;
 import hack.maze.entity.Question;

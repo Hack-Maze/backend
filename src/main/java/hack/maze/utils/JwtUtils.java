@@ -53,9 +53,9 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractClaims(token).getSubject();
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    public boolean isTokenValid(String token, AppUser appUser) {
+        final long id = (long) (int) extractClaims(token).get("userId");
+        return (id == appUser.getId()) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {

@@ -104,8 +104,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         userInfo.put("userId", appUser.getId());
         userInfo.put("role", appUser.getRole());
-        userInfo.put("username", appUser.getUsername());
-        userInfo.put("email", appUser.getEmail());
 
         return userInfo;
     }
