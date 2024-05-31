@@ -39,24 +39,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-            final String authHeader = request.getHeader(AUTHORIZATION);
-            final String username;
-            final String jwt;
+        final String authHeader = request.getHeader(AUTHORIZATION);
+        final String username;
+        final String jwt;
 
-            if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            jwt = authHeader.substring(TOKEN_PREFIX.length());
-            username = jwtUtils.extractClaims(jwt).getSubject();
-
-            if (!isAuthenticationEndpoint(request) && username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                getUserAndPerformAuthentication(request, jwt, username);
-            } else {
-                logger.warn("No Token Provided");
-            }
+        if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {
             filterChain.doFilter(request, response);
+            return;
+        }
+
+        jwt = authHeader.substring(TOKEN_PREFIX.length());
+        username = jwtUtils.extractClaims(jwt).getSubject();
+
+        if (!isAuthenticationEndpoint(request) && username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            getUserAndPerformAuthentication(request, jwt, username);
+        } else {
+            logger.warn("No Token Provided");
+        }
+        filterChain.doFilter(request, response);
     }
 
     private boolean isAuthenticationEndpoint(HttpServletRequest request) {
@@ -65,6 +65,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private void getUserAndPerformAuthentication(HttpServletRequest request, String jwt, String username) {
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+        log.info("\n\n\n\n\t\t\t\t\t{}\n\n\n\n", userDetails.getUsername());
         if (jwtUtils.isTokenValid(jwt, userDetails)) {
             authenticateUser(request, userDetails);
         }
