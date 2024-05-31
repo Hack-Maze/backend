@@ -9,6 +9,7 @@ import hack.maze.entity.Tag;
 import hack.maze.repository.MazeRepo;
 import hack.maze.service.AzureService;
 import hack.maze.service.MazeService;
+import hack.maze.service.ProfileService;
 import hack.maze.service.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class MazeServiceImpl implements MazeService {
     private final MazeRepo mazeRepo;
     private final TagService tagService;
     private final AzureService azureService;
+    private final ProfileService profileService;
 
     @Override
     public String createMaze(CreateMazeDTO createMazeDTO) {
@@ -50,7 +52,7 @@ public class MazeServiceImpl implements MazeService {
                 .title(createMazeDTO.title())
                 .description(createMazeDTO.description())
                 .summary(createMazeDTO.summary())
-                .author(getCurrentUser().getProfile())
+                .author(profileService._getSingleProfile(getCurrentUser()))
                 .createdAt(LocalDateTime.now())
                 .build();
     }

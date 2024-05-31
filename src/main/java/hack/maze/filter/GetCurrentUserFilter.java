@@ -40,8 +40,8 @@ public class GetCurrentUserFilter extends OncePerRequestFilter {
             if (!isAuthEndpoint(request)) {
                 String authHeader = request.getHeader(AUTHORIZATION);
                 String jwt = authHeader.substring(TOKEN_PREFIX.length());
-                String email = jwtUtils.extractClaims(jwt).getSubject();
-                setCurrentUser(userService.findByEmail(email));
+                String username = (String) jwtUtils.extractClaims(jwt).get("username");
+                setCurrentUser(username);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage());

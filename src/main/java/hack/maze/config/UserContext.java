@@ -4,13 +4,13 @@ import hack.maze.entity.AppUser;
 
 public class UserContext {
 
-    private static final ThreadLocal<AppUser> currentUser = new ThreadLocal<>();
+    private static final ThreadLocal<String> currentUser = new ThreadLocal<>();
 
-    public static void setCurrentUser(AppUser appUser) {
-        currentUser.set(appUser);
+    public static void setCurrentUser(String username) {
+        currentUser.set(username);
     }
 
-    public static AppUser getCurrentUser() {
+    public static String getCurrentUser() {
         return currentUser.get();
     }
 

@@ -29,7 +29,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     @Transactional
     public String updateProfileDate(CreateProfileDTO createProfileDTO) {
-        Profile profile = _getSingleProfile(getCurrentUser().getUsername());
+        Profile profile = _getSingleProfile(getCurrentUser());
         if (createProfileDTO.bio() != null) {
             profile.setBio(createProfileDTO.bio());
         }
@@ -69,7 +69,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public List<MazeSimpleDTO> getAllProfileCreatedMazes() {
-        Profile profile = _getSingleProfile(getCurrentUser().getUsername());
+        Profile profile = _getSingleProfile(getCurrentUser());
         return fromMazeToMazeSimpleDTO(profile.getCreatedMazes());
     }
 

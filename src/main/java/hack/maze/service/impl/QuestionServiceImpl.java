@@ -1,5 +1,6 @@
 package hack.maze.service.impl;
 
+import hack.maze.config.UserContext;
 import hack.maze.dto.QuestionDTO;
 import hack.maze.entity.Page;
 import hack.maze.entity.Question;
@@ -11,8 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Objects;
 
+import static hack.maze.config.UserContext.getCurrentUser;
+import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
 
 @Service
@@ -56,8 +60,9 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public String updateQuestion(long questionId, QuestionDTO questionDTO) {
+    public String updateQuestion(long questionId, QuestionDTO questionDTO) throws AccessDeniedException {
         Question targetQuestion = getSingleQuestion(questionId);
+        checkUserAuthority(getCurrentUser(), targetQuestion);
         if (questionDTO.content() != null) {
             targetQuestion.setContent(questionDTO.content());
         }
@@ -74,8 +79,9 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public String deleteQuestion(long questionId) {
+    public String deleteQuestion(long questionId) throws AccessDeniedException {
         Question targetQuestion = getSingleQuestion(questionId);
+        checkUserAuthority(getCurrentUser(), targetQuestion);
         questionRepo.delete(targetQuestion);
         return "Question with id = [" + questionId + "] deleted successfully";
     }

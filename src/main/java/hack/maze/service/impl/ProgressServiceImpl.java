@@ -13,12 +13,7 @@ import hack.maze.entity.Question;
 import hack.maze.mapper.ProfileMazeProgressMapper;
 import hack.maze.mapper.ProfilePageProgressMapper;
 import hack.maze.repository.ProfileQuestionProgressRepo;
-import hack.maze.service.MazeService;
-import hack.maze.service.PageService;
-import hack.maze.service.ProfileMazeProgressService;
-import hack.maze.service.ProfilePageProgressService;
-import hack.maze.service.ProgressService;
-import hack.maze.service.QuestionService;
+import hack.maze.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static hack.maze.config.UserContext.getCurrentUser;
 import static hack.maze.constant.ApplicationConstant.SOLVE_POINTS;
 import static hack.maze.mapper.ProfileMazeProgressMapper.*;
 import static hack.maze.mapper.ProfilePageProgressMapper.fromProfilePageProgressToProfilePageProgressDTO;
@@ -36,6 +32,7 @@ import static hack.maze.mapper.ProfilePageProgressMapper.fromProfilePageProgress
 @Slf4j
 public class ProgressServiceImpl implements ProgressService {
 
+    private final ProfileService profileService;
     private final MazeService mazeService;
     private final PageService pageService;
     private final QuestionService questionService;
@@ -45,7 +42,7 @@ public class ProgressServiceImpl implements ProgressService {
 
     @Override
     public String enrollUserToMaze(long mazeId) {
-        Profile profile = UserContext.getCurrentUser().getProfile();
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
         profileMazeProgressService.checkIfUserAlreadyEnrolledInThisMaze(profile.getId(), mazeId);
         Maze maze = mazeService._getSingleMaze(mazeId);
         ProfileMazeProgress profileMazeProgress = ProfileMazeProgress
@@ -60,7 +57,7 @@ public class ProgressServiceImpl implements ProgressService {
 
     @Override
     public String recordUserProgressInPage(long pageId) {
-        Profile profile = UserContext.getCurrentUser().getProfile();
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
         profilePageProgressService.checkIfUserAlreadyEnrolledInThisPage(profile.getId(), pageId);
         Page page = pageService.getSinglePage(pageId);
         ProfilePageProgress profilePageProgress = ProfilePageProgress
@@ -77,7 +74,7 @@ public class ProgressServiceImpl implements ProgressService {
     @Override
     @Transactional
     public String solveQuestion(long pageId, long solvedQuestionId) {
-        Profile profile = UserContext.getCurrentUser().getProfile();
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
         ProfilePageProgress profilePageProgress = profilePageProgressService.getUserPageProgress(profile.getId(), pageId);
         Question question = questionService.getSingleQuestion(solvedQuestionId);
         ProfileQuestionProgress savedProfileQuestionProgress = profileQuestionProgressRepo.save(ProfileQuestionProgress
@@ -93,11 +90,13 @@ public class ProgressServiceImpl implements ProgressService {
 
     @Override
     public List<ProfileMazeProgressDTO> getProfileMazesProgress() {
-        return fromProfileMazeProgressToProfileMazeProgressDTO(profileMazeProgressService.getProfileMazesProgressByProfileId(UserContext.getCurrentUser().getProfile().getId()));
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        return fromProfileMazeProgressToProfileMazeProgressDTO(profileMazeProgressService.getProfileMazesProgressByProfileId(profile.getId()));
     }
 
     @Override
     public List<ProfilePageProgressDTO> getProfilePagesProgress() {
-        return fromProfilePageProgressToProfilePageProgressDTO(profilePageProgressService.getProfilePagesProgressByProfileId(UserContext.getCurrentUser().getProfile().getId()));
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        return fromProfilePageProgressToProfilePageProgressDTO(profilePageProgressService.getProfilePagesProgressByProfileId(profile.getId()));
     }
 }
