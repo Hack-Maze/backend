@@ -3,10 +3,12 @@ package hack.maze.service.impl;
 import hack.maze.dto.CreateProfileDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.ProfileResponseDTO;
+import hack.maze.entity.AppUser;
 import hack.maze.entity.Profile;
 import hack.maze.repository.ProfileRepo;
 import hack.maze.service.AzureService;
 import hack.maze.service.ProfileService;
+import hack.maze.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,11 +27,13 @@ public class ProfileServiceImpl implements ProfileService {
 
     private final ProfileRepo profileRepo;
     private final AzureService azureService;
+    private final UserService userService;
 
     @Override
     @Transactional
     public String updateProfileDate(CreateProfileDTO createProfileDTO) {
         Profile profile = _getSingleProfile(getCurrentUser());
+        AppUser appUser = profile.getAppUser();
         if (createProfileDTO.bio() != null) {
             profile.setBio(createProfileDTO.bio());
         }
@@ -53,6 +57,14 @@ public class ProfileServiceImpl implements ProfileService {
         }
         if (createProfileDTO.personalWebsite() != null) {
             profile.setPersonalWebsite(createProfileDTO.personalWebsite());
+        }
+        if (createProfileDTO.email() != null) {
+            userService.checkIfUserWithEmailExists(createProfileDTO.email());
+            appUser.setEmail(createProfileDTO.email());
+        }
+        if (createProfileDTO.username() != null) {
+            userService.checkIfUserWithUsernameExists(createProfileDTO.username());
+            appUser.setUsername(createProfileDTO.username());
         }
         return "User profile updated successfully";
     }

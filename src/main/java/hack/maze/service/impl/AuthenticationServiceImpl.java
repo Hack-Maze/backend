@@ -10,6 +10,7 @@ import hack.maze.exceptions.UserAlreadyFoundException;
 import hack.maze.repository.ProfileRepo;
 import hack.maze.repository.UserRepo;
 import hack.maze.service.AuthenticationService;
+import hack.maze.service.UserService;
 import hack.maze.utils.JwtUtils;
 import jakarta.el.PropertyNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,11 +40,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     @Override
     public AuthenticationResponseDTO register(RegisterDTO request, HttpServletResponse response) {
-        checkIfUserWithUsernameExists(request.username());
-        checkIfUserWithEmailExists(request.email());
+        userService.checkIfUserWithUsernameExists(request.username());
+        userService.checkIfUserWithEmailExists(request.email());
         AppUser appUser = AppUser
                 .builder()
                 .role(Role.USER)
@@ -60,18 +62,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         profileRepo.save(profile);
 
         return createTokenAndSetToHeader(request, response);
-    }
-
-    private void checkIfUserWithEmailExists(String email) {
-        if (userRepo.findByEmail(email).isPresent()) {
-            throw new UserAlreadyFoundException("User with email = [" + email + "] already exist");
-        }
-    }
-
-    private void checkIfUserWithUsernameExists(String username) {
-        if (userRepo.findByUsername(username).isPresent()) {
-            throw new UserAlreadyFoundException("User with username = [" + username + "] already exist");
-        }
     }
 
     @Override
