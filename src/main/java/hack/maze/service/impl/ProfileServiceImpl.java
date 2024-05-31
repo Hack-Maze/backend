@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
@@ -58,11 +59,11 @@ public class ProfileServiceImpl implements ProfileService {
         if (createProfileDTO.personalWebsite() != null) {
             profile.setPersonalWebsite(createProfileDTO.personalWebsite());
         }
-        if (createProfileDTO.email() != null) {
+        if (createProfileDTO.email() != null && !Objects.equals(appUser.getEmail(), createProfileDTO.email())) {
             userService.checkIfUserWithEmailExists(createProfileDTO.email());
             appUser.setEmail(createProfileDTO.email());
         }
-        if (createProfileDTO.username() != null) {
+        if (createProfileDTO.username() != null && !Objects.equals(appUser.getUsername(), createProfileDTO.username())) {
             userService.checkIfUserWithUsernameExists(createProfileDTO.username());
             appUser.setUsername(createProfileDTO.username());
         }
