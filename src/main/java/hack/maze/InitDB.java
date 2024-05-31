@@ -125,7 +125,9 @@ public class InitDB {
     CommandLineRunner commandLineRunner() {
         return args -> {
 
-//            init();
+            if (mazeRepo.count() != 0) {
+                init();
+            }
             if (userRepo.count() == 0) {
                 AppUser savedUser = userRepo.save(AppUser
                         .builder()
