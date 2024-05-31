@@ -28,15 +28,6 @@ public class ProfileController {
         }
     }
 
-    @GetMapping("/id/{profileId}")
-    public ResponseEntity<?> getSingleProfileById(@PathVariable long profileId) {
-        try {
-            return ResponseEntity.ok(profileService.getSingleProfile(profileId));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
     @GetMapping("/username/{username}")
     public ResponseEntity<?> getSingleProfileByUsername(@PathVariable String username) {
         try {

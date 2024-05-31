@@ -58,18 +58,8 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public Profile _getSingleProfile(long profileId) {
-        return profileRepo.findById(profileId).orElseThrow(() -> new RuntimeException("Profile with id = [" + profileId + "] not exist"));
-    }
-
-    @Override
     public Profile _getSingleProfile(String username) {
         return profileRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Profile with username = [" + username + "] not exist"));
-    }
-
-    @Override
-    public ProfileResponseDTO getSingleProfile(long profileId) {
-        return fromProfileToProfileResponseDTO(_getSingleProfile(profileId));
     }
 
     @Override

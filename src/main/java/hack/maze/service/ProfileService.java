@@ -9,8 +9,6 @@ import java.util.List;
 
 public interface ProfileService {
     String updateProfileDate(CreateProfileDTO createProfileDTO);
-    ProfileResponseDTO getSingleProfile(long profileId);
-    Profile _getSingleProfile(long profileId);
     Profile _getSingleProfile(String username);
     ProfileResponseDTO getSingleProfile(String username);
     List<MazeSimpleDTO> getAllProfileCreatedMazes();
