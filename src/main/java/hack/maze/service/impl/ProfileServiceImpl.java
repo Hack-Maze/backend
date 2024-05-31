@@ -29,7 +29,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     @Transactional
     public String updateProfileDate(CreateProfileDTO createProfileDTO) {
-        Profile profile = getCurrentUser().getProfile();
+        Profile profile = _getSingleProfile(getCurrentUser().getUsername());
         if (createProfileDTO.bio() != null) {
             profile.setBio(createProfileDTO.bio());
         }
