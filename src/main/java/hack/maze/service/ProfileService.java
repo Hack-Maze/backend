@@ -12,5 +12,6 @@ public interface ProfileService {
     Profile _getSingleProfile(String username);
     Profile _getSingleProfile(Long id);
     ProfileResponseDTO getSingleProfile(String username);
+    ProfileResponseDTO getCurrentUserProfile();
     List<MazeSimpleDTO> getAllProfileCreatedMazes();
 }

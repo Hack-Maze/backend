@@ -37,6 +37,15 @@ public class ProfileController {
         }
     }
 
+    @GetMapping("/current")
+    public ResponseEntity<?> getCurrentUserProfile() {
+        try {
+            return ResponseEntity.ok(profileService.getCurrentUserProfile());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     @GetMapping("/created-mazes")
     public ResponseEntity<?> getAllProfileCreatedMazes() {
         try {
