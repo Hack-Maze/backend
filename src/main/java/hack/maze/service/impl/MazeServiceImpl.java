@@ -40,19 +40,20 @@ public class MazeServiceImpl implements MazeService {
     private final ProfileService profileService;
 
     @Override
-    public String createMaze(CreateMazeDTO createMazeDTO) {
-        validateCreateMazeDTO(createMazeDTO);
-        mazeRepo.save(fillMazeInfo(createMazeDTO));
+    public String createMaze(UpdateMazeDTO updateMazeDTO) throws IOException {
+        validateUpdateMazeDTO(updateMazeDTO);
+        mazeRepo.save(fillMazeInfo(updateMazeDTO));
         return "new maze created Successfully";
     }
 
-    private Maze fillMazeInfo(CreateMazeDTO createMazeDTO) {
+    private Maze fillMazeInfo(UpdateMazeDTO updateMazeDTO) throws IOException {
         return Maze
                 .builder()
                 .visibility(true)
-                .title(createMazeDTO.title())
-                .description(createMazeDTO.description())
-                .summary(createMazeDTO.summary())
+                .title(updateMazeDTO.title())
+                .description(updateMazeDTO.description())
+                .summary(updateMazeDTO.summary())
+                .image(azureService.sendImageToAzure(updateMazeDTO.image()))
                 .author(profileService._getSingleProfile(getCurrentUser()))
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -66,10 +67,12 @@ public class MazeServiceImpl implements MazeService {
         return tags;
     }
 
-    private void validateCreateMazeDTO(CreateMazeDTO createMazeDTO) {
-        Objects.requireNonNull(createMazeDTO.title(), nullMsg("title"));
-        Objects.requireNonNull(createMazeDTO.description(), nullMsg("description"));
-        Objects.requireNonNull(createMazeDTO.summary(), nullMsg("summary"));
+    private void validateUpdateMazeDTO(UpdateMazeDTO updateMazeDTO) {
+        Objects.requireNonNull(updateMazeDTO.title(), nullMsg("title"));
+        Objects.requireNonNull(updateMazeDTO.description(), nullMsg("description"));
+        Objects.requireNonNull(updateMazeDTO.summary(), nullMsg("summary"));
+        Objects.requireNonNull(updateMazeDTO.difficulty(), nullMsg("difficulty"));
+        Objects.requireNonNull(updateMazeDTO.image(), nullMsg("image"));
     }
 
     @Override

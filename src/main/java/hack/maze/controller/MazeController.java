@@ -18,9 +18,9 @@ public class MazeController {
     private final MazeRepo mazeRepo;
 
     @PostMapping
-    public ResponseEntity<String> createMaze(@RequestBody CreateMazeDTO createMazeDTO) {
+    public ResponseEntity<String> createMaze(@ModelAttribute UpdateMazeDTO updateMazeDTO) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(mazeService.createMaze(createMazeDTO));
+            return ResponseEntity.status(HttpStatus.CREATED).body(mazeService.createMaze(updateMazeDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

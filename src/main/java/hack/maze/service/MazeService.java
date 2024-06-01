@@ -11,7 +11,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 public interface MazeService {
-    String createMaze(CreateMazeDTO createMazeDTO);
+    String createMaze(UpdateMazeDTO updateMazeDTO) throws IOException;
     List<MazeSimpleDTO> getAllMazes();
     MazeResponseDTO getSingleMaze(long mazeId);
     Maze _getSingleMaze(long mazeId);
