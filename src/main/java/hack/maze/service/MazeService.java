@@ -6,6 +6,7 @@ import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.entity.Maze;
 
+import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
@@ -15,5 +16,5 @@ public interface MazeService {
     MazeResponseDTO getSingleMaze(long mazeId);
     Maze _getSingleMaze(long mazeId);
     String deleteMaze(long mazeId) throws AccessDeniedException;
-    String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) throws AccessDeniedException;
+    String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) throws IOException;
 }
