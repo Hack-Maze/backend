@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
 import static hack.maze.constant.ApplicationConstant.SOLVE_POINTS;
@@ -59,7 +60,7 @@ public class ProgressServiceImpl implements ProgressService {
     public String recordUserProgressInPage(long pageId) {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
         profilePageProgressService.checkIfUserAlreadyEnrolledInThisPage(profile.getId(), pageId);
-        Page page = pageService.getSinglePage(pageId);
+        Page page = pageService._getSinglePage(pageId);
         ProfilePageProgress profilePageProgress = ProfilePageProgress
                 .builder()
                 .profile(profile)
@@ -73,10 +74,11 @@ public class ProgressServiceImpl implements ProgressService {
 
     @Override
     @Transactional
-    public String solveQuestion(long pageId, long solvedQuestionId) {
+    public String solveQuestion(long pageId, long solvedQuestionId, String answer) {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
         ProfilePageProgress profilePageProgress = profilePageProgressService.getUserPageProgress(profile.getId(), pageId);
-        Question question = questionService.getSingleQuestion(solvedQuestionId);
+        Question question = questionService._getSingleQuestion(solvedQuestionId);
+        checkAnswer(question.getAnswer(), answer);
         ProfileQuestionProgress savedProfileQuestionProgress = profileQuestionProgressRepo.save(ProfileQuestionProgress
                 .builder()
                 .question(question)
@@ -86,6 +88,12 @@ public class ProgressServiceImpl implements ProgressService {
         profile.setLastQuestionSolvedAt(savedProfileQuestionProgress.getSolvedAt());
         profile.setRank(profile.getRank() + SOLVE_POINTS);
         return "User progress updated successfully";
+    }
+
+    private void checkAnswer(String theActualAnswer, String userAnswer) {
+        if (!Objects.equals(theActualAnswer, userAnswer)) {
+            throw new RuntimeException("Wrong answer");
+        }
     }
 
     @Override

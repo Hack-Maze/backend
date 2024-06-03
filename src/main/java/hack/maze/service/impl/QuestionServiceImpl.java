@@ -1,8 +1,10 @@
 package hack.maze.service.impl;
 
 import hack.maze.dto.QuestionDTO;
+import hack.maze.dto.QuestionResponseDTO;
 import hack.maze.entity.Page;
 import hack.maze.entity.Question;
+import hack.maze.mapper.QuestionMapper;
 import hack.maze.repository.QuestionRepo;
 import hack.maze.service.PageService;
 import hack.maze.service.QuestionService;
@@ -15,6 +17,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
+import static hack.maze.mapper.QuestionMapper.fromQuestionToQuestionResponseDTO;
 import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
 
@@ -29,7 +32,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public String createQuestion(long pageId, QuestionDTO questionDTO) {
         validateQuestionInfo(questionDTO);
-        Page page = pageService.getSinglePage(pageId);
+        Page page = pageService._getSinglePage(pageId);
         questionRepo.save(fillQuestionInfo(questionDTO, page));
         return "Question created Successfully";
     }
@@ -53,14 +56,19 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public Question getSingleQuestion(long questionId) {
+    public QuestionResponseDTO getSingleQuestion(long questionId) {
+        return fromQuestionToQuestionResponseDTO(_getSingleQuestion(questionId));
+    }
+
+    @Override
+    public Question _getSingleQuestion(long questionId) {
         return questionRepo.findById(questionId).orElseThrow(() -> new RuntimeException("Question with id = [" + questionId + "] not exist"));
     }
 
     @Override
     @Transactional
     public String updateQuestion(long questionId, QuestionDTO questionDTO) throws AccessDeniedException {
-        Question targetQuestion = getSingleQuestion(questionId);
+        Question targetQuestion = _getSingleQuestion(questionId);
         checkUserAuthority(getCurrentUser(), targetQuestion);
         if (questionDTO.content() != null) {
             targetQuestion.setContent(questionDTO.content());
@@ -79,9 +87,21 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public String deleteQuestion(long questionId) throws AccessDeniedException {
-        Question targetQuestion = getSingleQuestion(questionId);
+        Question targetQuestion = _getSingleQuestion(questionId);
         checkUserAuthority(getCurrentUser(), targetQuestion);
         questionRepo.delete(targetQuestion);
         return "Question with id = [" + questionId + "] deleted successfully";
+    }
+
+    @Override
+    public String getQuestionHint(long questionId) {
+        Question question = _getSingleQuestion(questionId);
+        return question.getHint();
+    }
+
+    @Override
+    public String getQuestionAnswer(long questionId) {
+        Question question = _getSingleQuestion(questionId);
+        return question.getAnswer();
     }
 }

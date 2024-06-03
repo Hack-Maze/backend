@@ -58,4 +58,22 @@ public class QuestionController {
         }
     }
 
+    @GetMapping("answer/{questionId}")
+    public ResponseEntity<?> getQuestionAnswer(@PathVariable long questionId) {
+        try {
+            return ResponseEntity.ok(questionService.getQuestionAnswer(questionId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("hint/{questionId}")
+    public ResponseEntity<?> getQuestionHint(@PathVariable long questionId) {
+        try {
+            return ResponseEntity.ok(questionService.getQuestionHint(questionId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 }

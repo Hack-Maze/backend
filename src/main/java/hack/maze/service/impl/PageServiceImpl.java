@@ -2,6 +2,7 @@ package hack.maze.service.impl;
 
 import hack.maze.config.UserContext;
 import hack.maze.dto.PageRequestDTO;
+import hack.maze.dto.PageResponseDTO;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Page;
 import hack.maze.repository.PageRepo;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
+import static hack.maze.mapper.PageMapper.fromPageToPageResponseDTO;
 import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
 
@@ -53,19 +55,24 @@ public class PageServiceImpl implements PageService {
     }
 
     @Override
-    public List<Page> getAllPagesInSpecificMaze(long mazeId) {
-        return pageRepo.getAllPagesInSpecificMaze(mazeId);
+    public List<PageResponseDTO> getAllPagesInSpecificMaze(long mazeId) {
+        return fromPageToPageResponseDTO(pageRepo.getAllPagesInSpecificMaze(mazeId));
     }
 
     @Override
-    public Page getSinglePage(long pageId) {
+    public PageResponseDTO getSinglePage(long pageId) {
+        return fromPageToPageResponseDTO(_getSinglePage(pageId));
+    }
+
+    @Override
+    public Page _getSinglePage(long pageId) {
         return pageRepo.findById(pageId).orElseThrow(() -> new RuntimeException("page with id = [" + pageId + "] not exist"));
     }
 
     @Override
     @Transactional
     public String updatePage(long pageId, PageRequestDTO pageRequestDTO) throws AccessDeniedException {
-        Page taragetPage = getSinglePage(pageId);
+        Page taragetPage = _getSinglePage(pageId);
         checkUserAuthority(getCurrentUser(), taragetPage);
         if (pageRequestDTO.title() != null) {
             taragetPage.setTitle(pageRequestDTO.title());
@@ -82,7 +89,7 @@ public class PageServiceImpl implements PageService {
 
     @Override
     public String deletePage(long pageId) throws AccessDeniedException {
-        Page taragetPage = getSinglePage(pageId);
+        Page taragetPage = _getSinglePage(pageId);
         checkUserAuthority(getCurrentUser(), taragetPage);
         pageRepo.delete(taragetPage);
         return "Page with title = [" + taragetPage.getTitle() + "] deleted successfully";
