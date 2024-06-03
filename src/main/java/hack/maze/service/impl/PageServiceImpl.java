@@ -29,11 +29,11 @@ public class PageServiceImpl implements PageService {
     private final MazeService mazeService;
 
     @Override
-    public String createPage(long mazeId, PageRequestDTO pageRequestDTO) {
+    public Long createPage(long mazeId, PageRequestDTO pageRequestDTO) {
         validatePageInfo(pageRequestDTO);
         Maze maze = mazeService._getSingleMaze(mazeId);
-        pageRepo.save(fillPageInfo(pageRequestDTO, maze));
-        return "page with title = [" + pageRequestDTO.title() + "] added successfully to maze with title = [" + maze.getTitle() + "]";
+        Page savedPage = pageRepo.save(fillPageInfo(pageRequestDTO, maze));
+        return savedPage.getId();
     }
 
     private Page fillPageInfo(PageRequestDTO pageRequestDTO, Maze maze) {

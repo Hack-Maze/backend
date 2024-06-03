@@ -40,10 +40,10 @@ public class MazeServiceImpl implements MazeService {
     private final ProfileService profileService;
 
     @Override
-    public String createMaze(UpdateMazeDTO updateMazeDTO) throws IOException {
+    public Long createMaze(UpdateMazeDTO updateMazeDTO) throws IOException {
         validateUpdateMazeDTO(updateMazeDTO);
-        mazeRepo.save(fillMazeInfo(updateMazeDTO));
-        return "new maze created Successfully";
+        Maze savedMaze = mazeRepo.save(fillMazeInfo(updateMazeDTO));
+        return savedMaze.getId();
     }
 
     private Maze fillMazeInfo(UpdateMazeDTO updateMazeDTO) throws IOException {
