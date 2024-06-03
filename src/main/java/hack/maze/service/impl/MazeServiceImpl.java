@@ -56,6 +56,7 @@ public class MazeServiceImpl implements MazeService {
                 .image(azureService.sendImageToAzure(updateMazeDTO.image()))
                 .author(profileService._getSingleProfile(getCurrentUser()))
                 .createdAt(LocalDateTime.now())
+                .difficulty(updateMazeDTO.difficulty())
                 .build();
     }
 
