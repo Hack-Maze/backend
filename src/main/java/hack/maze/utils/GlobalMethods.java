@@ -9,8 +9,8 @@ import java.util.Objects;
 
 public class GlobalMethods {
 
-    private static void checkUserAuthority(Long userId, Long userThatWantToGainAccess) throws AccessDeniedException {
-        if (!Objects.equals(userId, userThatWantToGainAccess)) {
+    private static void checkUserAuthority(Long userThatWantToGainAccess, Long authorId) throws AccessDeniedException {
+        if (!Objects.equals(userThatWantToGainAccess, authorId)) {
             throw new AccessDeniedException("Access denied!");
         }
     }
