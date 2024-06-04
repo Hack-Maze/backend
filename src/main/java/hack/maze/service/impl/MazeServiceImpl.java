@@ -73,7 +73,7 @@ public class MazeServiceImpl implements MazeService {
         Objects.requireNonNull(updateMazeDTO.description(), nullMsg("description"));
         Objects.requireNonNull(updateMazeDTO.summary(), nullMsg("summary"));
         Objects.requireNonNull(updateMazeDTO.difficulty(), nullMsg("difficulty"));
-        Objects.requireNonNull(updateMazeDTO.image(), nullMsg("image"));
+//        Objects.requireNonNull(updateMazeDTO.image(), nullMsg("image"));
     }
 
     @Override

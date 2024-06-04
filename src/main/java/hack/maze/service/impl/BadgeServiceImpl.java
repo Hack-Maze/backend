@@ -3,6 +3,7 @@ package hack.maze.service.impl;
 import hack.maze.dto.BadgeDTO;
 import hack.maze.entity.Badge;
 import hack.maze.repository.BadgeRepo;
+import hack.maze.service.AzureService;
 import hack.maze.service.BadgeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,24 +23,21 @@ import static hack.maze.utils.GlobalMethods.nullMsg;
 public class BadgeServiceImpl implements BadgeService {
 
     private final BadgeRepo badgeRepo;
+    private final AzureService azureService;
 
     @Override
-    public String createBadge(BadgeDTO badgeDTO) {
+    public String createBadge(BadgeDTO badgeDTO) throws IOException {
         Badge badge = new Badge();
         validateBadgeDTOInfo(badgeDTO);
         badge.setTitle(badgeDTO.title());
-        badge.setImage(handleSendingImageToAzure(badgeDTO.image()));
+        badge.setImage(azureService.sendImageToAzure(badgeDTO.image()));
         badgeRepo.save(badge);
         return "new badge with title = [" + badge.getTitle() + "] created successfully";
     }
 
-    private String handleSendingImageToAzure(MultipartFile image) {
-        return "";
-    }
-
     private void validateBadgeDTOInfo(BadgeDTO badgeDTO) {
         Objects.requireNonNull(badgeDTO.title(), nullMsg("title"));
-        Objects.requireNonNull(badgeDTO.image(), nullMsg("image"));
+//        Objects.requireNonNull(badgeDTO.image(), nullMsg("image"));
     }
 
     @Override
