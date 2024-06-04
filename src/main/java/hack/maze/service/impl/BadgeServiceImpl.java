@@ -47,13 +47,13 @@ public class BadgeServiceImpl implements BadgeService {
 
     @Override
     @Transactional
-    public String updateBadge(long badgeId, BadgeDTO badgeDTO) {
+    public String updateBadge(long badgeId, BadgeDTO badgeDTO) throws IOException {
         Badge targetBadge = getSingleBadge(badgeId);
         if (badgeDTO.title() != null) {
             targetBadge.setTitle(badgeDTO.title());
         }
         if (badgeDTO.image() != null) {
-            targetBadge.setImage(handleSendingImageToAzure(badgeDTO.image()));
+            targetBadge.setImage(azureService.sendImageToAzure(badgeDTO.image()));
         }
         return "Badge updated successfully";
     }

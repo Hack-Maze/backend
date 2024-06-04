@@ -27,7 +27,9 @@ public class AzureServiceImpl implements AzureService {
 
     @Override
     public String sendImageToAzure(MultipartFile image) throws IOException {
-        checkImage(image);
+        if (checkImage(image)) {
+            return "";
+        }
 
         // get blob container and create it if not exist
         BlobContainerClient imagesContainer = createBlobContainerIfNotExist(IMAGES_BLOB_CONTAINER_NAME);
@@ -42,16 +44,17 @@ public class AzureServiceImpl implements AzureService {
         return blobClient.getBlobUrl();
     }
 
-    private void checkImage(MultipartFile image) {
+    private boolean checkImage(MultipartFile image) {
         if (image.isEmpty()) {
-            throw new IllegalArgumentException("File is empty");
+            return false;
         }
         if (!allowedContentTypes.contains(image.getContentType())) {
-            throw new IllegalArgumentException("Invalid image type: " + image.getContentType());
+            return false;
         }
         if (image.getSize() > 5 * 1024 * 1024) { // 5MB limit
-            throw new IllegalArgumentException("File size exceeds the limit of 10MB");
+            return false;
         }
+        return true;
     }
 
     @Override
