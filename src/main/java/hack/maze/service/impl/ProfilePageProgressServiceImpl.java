@@ -18,19 +18,6 @@ public class ProfilePageProgressServiceImpl implements ProfilePageProgressServic
     private final ProfilePageProgressRepo profilePageProgressRepo;
 
     @Override
-    public void checkIfUserAlreadyEnrolledInThisPage(long profileId, long pageId) {
-        if (profilePageProgressRepo.findByProfileIdAndPageId(profileId, pageId).isPresent()) {
-            throw new ResourceAlreadyExistException("User Already enrolled in this Page before");
-        }
-    }
-
-    @Override
-    public String createNewProfilePageProgress(ProfilePageProgress profilePageProgress) {
-        profilePageProgressRepo.save(profilePageProgress);
-        return "Profile progress updated successfully";
-    }
-
-    @Override
     public ProfilePageProgress _createNewProfilePageProgress(ProfilePageProgress profilePageProgress) {
         return profilePageProgressRepo.save(profilePageProgress);
     }
