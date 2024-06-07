@@ -24,8 +24,10 @@ public class Page {
     private Long id;
     private String title;
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     private String description;
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     private String content;
 
     @OneToMany(mappedBy = "page", cascade = CascadeType.REMOVE)

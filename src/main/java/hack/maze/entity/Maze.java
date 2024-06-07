@@ -24,8 +24,10 @@ public class Maze {
     private Long id;
     private String title;
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     private String description;
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     private String summary;
     private LocalDateTime createdAt;
     private boolean visibility;
