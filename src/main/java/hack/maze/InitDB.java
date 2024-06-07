@@ -125,20 +125,20 @@ public class InitDB {
     CommandLineRunner commandLineRunner() {
         return args -> {
 
-            if (mazeRepo.count() == 0) {
-                init();
-            }
-            if (userRepo.count() == 0) {
-                AppUser savedUser = userRepo.save(AppUser
-                        .builder()
-                        .email("admin@admin.admin")
-                        .username("admin")
-                        .password("$2a$12$ugoECT/fnHBIRgczCJbe2eOKRDgKFrjTOKuG3EViEX3dk8HGo1r9C")
-                        .role(Role.ADMIN)
-                        .createdAt(LocalDateTime.now())
-                        .build());
-                profileRepo.save(Profile.builder().appUser(savedUser).build());
-            }
+//            if (mazeRepo.count() == 0) {
+//                init();
+//            }
+//            if (userRepo.count() == 0) {
+//                AppUser savedUser = userRepo.save(AppUser
+//                        .builder()
+//                        .email("admin@admin.admin")
+//                        .username("admin")
+//                        .password("$2a$12$ugoECT/fnHBIRgczCJbe2eOKRDgKFrjTOKuG3EViEX3dk8HGo1r9C")
+//                        .role(Role.ADMIN)
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//                profileRepo.save(Profile.builder().appUser(savedUser).build());
+//            }
 
 
         };
