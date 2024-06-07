@@ -13,8 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class
-ProfilePageProgressServiceImpl implements ProfilePageProgressService {
+public class ProfilePageProgressServiceImpl implements ProfilePageProgressService {
 
     private final ProfilePageProgressRepo profilePageProgressRepo;
 
@@ -32,8 +31,13 @@ ProfilePageProgressServiceImpl implements ProfilePageProgressService {
     }
 
     @Override
+    public ProfilePageProgress _createNewProfilePageProgress(ProfilePageProgress profilePageProgress) {
+        return profilePageProgressRepo.save(profilePageProgress);
+    }
+
+    @Override
     public ProfilePageProgress getUserPageProgress(long profileId, long pageId) {
-        return profilePageProgressRepo.findByProfileIdAndPageId(profileId, pageId).orElseThrow(() -> new RuntimeException("You should add your progress in this Page first!"));
+        return profilePageProgressRepo.findByProfileIdAndPageId(profileId, pageId).orElse(null);
     }
 
     @Override

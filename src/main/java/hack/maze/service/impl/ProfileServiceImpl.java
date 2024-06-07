@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
+import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_PROFILES;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
 import static hack.maze.mapper.MazeMapper.fromProfileToProfileResponseDTO;
 
@@ -40,7 +41,7 @@ public class ProfileServiceImpl implements ProfileService {
             profile.setBio(createProfileDTO.bio());
         }
         if (createProfileDTO.image() != null) {
-            profile.setImage(azureService.sendImageToAzure(createProfileDTO.image()));
+            profile.setImage(azureService.sendImageToAzure(createProfileDTO.image(), IMAGES_BLOB_CONTAINER_PROFILES, profile.getId()));
         }
         if (createProfileDTO.job() != null) {
             profile.setJob(createProfileDTO.job());

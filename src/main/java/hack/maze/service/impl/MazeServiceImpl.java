@@ -1,6 +1,5 @@
 package hack.maze.service.impl;
 
-import hack.maze.dto.CreateMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
+import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_MAZES;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeResponseDTO;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
 import static hack.maze.utils.GlobalMethods.checkUserAuthority;
@@ -40,9 +40,12 @@ public class MazeServiceImpl implements MazeService {
     private final ProfileService profileService;
 
     @Override
+//    @Transactional
     public Long createMaze(UpdateMazeDTO updateMazeDTO) throws IOException {
         validateUpdateMazeDTO(updateMazeDTO);
         Maze savedMaze = mazeRepo.save(fillMazeInfo(updateMazeDTO));
+        savedMaze.setImage(azureService.sendImageToAzure(updateMazeDTO.image(), IMAGES_BLOB_CONTAINER_MAZES, savedMaze.getId()));
+        mazeRepo.save(savedMaze);
         return savedMaze.getId();
     }
 
@@ -53,7 +56,6 @@ public class MazeServiceImpl implements MazeService {
                 .title(updateMazeDTO.title())
                 .description(updateMazeDTO.description())
                 .summary(updateMazeDTO.summary())
-                .image(azureService.sendImageToAzure(updateMazeDTO.image()))
                 .author(profileService._getSingleProfile(getCurrentUser()))
                 .createdAt(LocalDateTime.now())
                 .difficulty(updateMazeDTO.difficulty())
@@ -118,7 +120,7 @@ public class MazeServiceImpl implements MazeService {
             maze.setTags(getTagsFromListOfTagIds(updateMazeDTO.tagIds()));
         }
         if (updateMazeDTO.image() != null) {
-            maze.setImage(azureService.sendImageToAzure(updateMazeDTO.image()));
+            maze.setImage(azureService.sendImageToAzure(updateMazeDTO.image(), IMAGES_BLOB_CONTAINER_MAZES, maze.getId()));
         }
         if (updateMazeDTO.difficulty() != null) {
             maze.setDifficulty(updateMazeDTO.difficulty());

@@ -57,26 +57,10 @@ public class ProgressServiceImpl implements ProgressService {
     }
 
     @Override
-    public String recordUserProgressInPage(long pageId) {
-        Profile profile = profileService._getSingleProfile(getCurrentUser());
-        profilePageProgressService.checkIfUserAlreadyEnrolledInThisPage(profile.getId(), pageId);
-        Page page = pageService._getSinglePage(pageId);
-        ProfilePageProgress profilePageProgress = ProfilePageProgress
-                .builder()
-                .profile(profile)
-                .numberOfSolvedQuestions(0)
-                .isCompleted(false)
-                .page(page)
-                .build();
-        String ret = profilePageProgressService.createNewProfilePageProgress(profilePageProgress);
-        return "Page progress added successfully | " + ret;
-    }
-
-    @Override
     @Transactional
     public String solveQuestion(long pageId, long solvedQuestionId, String answer) {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
-        ProfilePageProgress profilePageProgress = profilePageProgressService.getUserPageProgress(profile.getId(), pageId);
+        ProfilePageProgress profilePageProgress = createPageProgressIfNotExist(profile, pageId);
         Question question = questionService._getSingleQuestion(solvedQuestionId);
         checkAnswer(question.getAnswer(), answer);
         ProfileQuestionProgress savedProfileQuestionProgress = profileQuestionProgressRepo.save(ProfileQuestionProgress
@@ -90,8 +74,24 @@ public class ProgressServiceImpl implements ProgressService {
         return "User progress updated successfully";
     }
 
+    private ProfilePageProgress createPageProgressIfNotExist(Profile profile, long pageId) {
+        ProfilePageProgress pageProgress = profilePageProgressService.getUserPageProgress(profile.getId(), pageId);
+        if (pageProgress == null) {
+            Page page = pageService._getSinglePage(pageId);
+            ProfilePageProgress profilePageProgress = ProfilePageProgress
+                    .builder()
+                    .profile(profile)
+                    .numberOfSolvedQuestions(0)
+                    .isCompleted(false)
+                    .page(page)
+                    .build();
+            return profilePageProgressService._createNewProfilePageProgress(profilePageProgress);
+        }
+        return pageProgress;
+    }
+
     private void checkAnswer(String theActualAnswer, String userAnswer) {
-        if (!Objects.equals(theActualAnswer, userAnswer)) {
+        if (!Objects.equals(theActualAnswer.toLowerCase(), userAnswer.toLowerCase())) {
             throw new RuntimeException("Wrong answer");
         }
     }

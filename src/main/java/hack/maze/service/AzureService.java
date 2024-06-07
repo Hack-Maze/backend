@@ -6,6 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 public interface AzureService {
-    String sendImageToAzure(MultipartFile image) throws IOException;
+    String sendImageToAzure(MultipartFile image, String containerBlobName, Long blobName) throws IOException;
     BlobContainerClient createBlobContainerIfNotExist(String containerBlobName);
 }

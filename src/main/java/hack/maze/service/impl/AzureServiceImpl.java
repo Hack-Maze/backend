@@ -5,6 +5,7 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.models.BlobCorsRule;
 import com.azure.storage.blob.models.BlobServiceProperties;
+import com.azure.storage.blob.models.PublicAccessType;
 import hack.maze.service.AzureService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-
-import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_NAME;
+import java.util.Objects;
 
 
 @Service
@@ -26,19 +26,29 @@ public class AzureServiceImpl implements AzureService {
     private final List<String> allowedContentTypes = List.of("image/jpeg", "image/png", "image/gif");
 
     @Override
-    public String sendImageToAzure(MultipartFile image) throws IOException {
+    public String sendImageToAzure(MultipartFile image, String containerBlobName, Long blobName) throws IOException {
         if (!checkImage(image)) {
             return "";
         }
 
         // get blob container and create it if not exist
-        BlobContainerClient imagesContainer = createBlobContainerIfNotExist(IMAGES_BLOB_CONTAINER_NAME);
+        BlobContainerClient imagesContainer = createBlobContainerIfNotExist(containerBlobName);
+
+        // extract image extension
+        Objects.requireNonNull(image.getOriginalFilename(), "Image name could not be null");
+        String imageExtension = image.getOriginalFilename().split("\\.")[image.getOriginalFilename().split("\\.").length - 1];
+
+        // construct image name
+        // blobName + "/" + blobName.toString() + "." + imageExtension
+        String imageName = String.format("%s/%s.%s", blobName.toString(), blobName.toString(), imageExtension);
+
+        log.info("\n\n\n\t\t\tIMAGE_NAME: {}\n\n\n\n", imageName);
 
         // set rules
         setCorsRules();
 
         // upload image
-        BlobClient blobClient = imagesContainer.getBlobClient(image.getOriginalFilename());
+        BlobClient blobClient = imagesContainer.getBlobClient(imageName);
         blobClient.upload(image.getInputStream(), image.getSize(), true);
 
         return blobClient.getBlobUrl();

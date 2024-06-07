@@ -22,15 +22,6 @@ public class ProgressController {
         }
     }
 
-    @PostMapping("/record-user-to-page/{pageId}")
-    public ResponseEntity<?> recordUserProgressInPage(@PathVariable long pageId) {
-        try {
-            return ResponseEntity.ok(progressService.recordUserProgressInPage(pageId));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
     @PostMapping("/solve-question/{pageId}/{solvedQuestionId}")
     public ResponseEntity<?> solveQuestion(@PathVariable long pageId, @PathVariable long solvedQuestionId, @RequestParam("answer") String answer) {
         try {

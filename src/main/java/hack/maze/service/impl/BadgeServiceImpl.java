@@ -13,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
+import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_BADGES;
 import static hack.maze.utils.GlobalMethods.nullMsg;
 
 @Service
@@ -25,12 +27,13 @@ public class BadgeServiceImpl implements BadgeService {
     private final AzureService azureService;
 
     @Override
+    @Transactional
     public String createBadge(BadgeDTO badgeDTO) throws IOException {
         Badge badge = new Badge();
         validateBadgeDTOInfo(badgeDTO);
         badge.setTitle(badgeDTO.title());
-        badge.setImage(azureService.sendImageToAzure(badgeDTO.image()));
-        badgeRepo.save(badge);
+        Badge savedBadge = badgeRepo.save(badge);
+        savedBadge.setImage(azureService.sendImageToAzure(badgeDTO.image(), IMAGES_BLOB_CONTAINER_BADGES, savedBadge.getId()));
         return "new badge with title = [" + badge.getTitle() + "] created successfully";
     }
 
@@ -52,7 +55,7 @@ public class BadgeServiceImpl implements BadgeService {
             targetBadge.setTitle(badgeDTO.title());
         }
         if (badgeDTO.image() != null) {
-            targetBadge.setImage(azureService.sendImageToAzure(badgeDTO.image()));
+            targetBadge.setImage(azureService.sendImageToAzure(badgeDTO.image(), IMAGES_BLOB_CONTAINER_BADGES, targetBadge.getId()));
         }
         return "Badge updated successfully";
     }
