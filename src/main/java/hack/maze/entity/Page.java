@@ -23,10 +23,12 @@ public class Page {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
-    @Lob
+
+    @Column(columnDefinition = "text")
     @Basic(fetch = FetchType.LAZY)
     private String description;
-    @Lob
+
+    @Column(columnDefinition = "text")
     @Basic(fetch = FetchType.LAZY)
     private String content;
 
