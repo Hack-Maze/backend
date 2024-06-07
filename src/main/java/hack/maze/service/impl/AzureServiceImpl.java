@@ -27,7 +27,7 @@ public class AzureServiceImpl implements AzureService {
 
     @Override
     public String sendImageToAzure(MultipartFile image) throws IOException {
-        if (checkImage(image)) {
+        if (!checkImage(image)) {
             return "";
         }
 
@@ -48,13 +48,7 @@ public class AzureServiceImpl implements AzureService {
         if (image.isEmpty()) {
             return false;
         }
-        if (!allowedContentTypes.contains(image.getContentType())) {
-            return false;
-        }
-        if (image.getSize() > 5 * 1024 * 1024) { // 5MB limit
-            return false;
-        }
-        return true;
+        return allowedContentTypes.contains(image.getContentType());
     }
 
     @Override
