@@ -4,7 +4,6 @@ import hack.maze.dto.QuestionDTO;
 import hack.maze.dto.QuestionResponseDTO;
 import hack.maze.entity.Page;
 import hack.maze.entity.Question;
-import hack.maze.mapper.QuestionMapper;
 import hack.maze.repository.QuestionRepo;
 import hack.maze.service.PageService;
 import hack.maze.service.QuestionService;
@@ -30,11 +29,11 @@ public class QuestionServiceImpl implements QuestionService {
     private final PageService pageService;
 
     @Override
-    public String createQuestion(long pageId, QuestionDTO questionDTO) {
+    public Long createQuestion(long pageId, QuestionDTO questionDTO) {
         validateQuestionInfo(questionDTO);
         Page page = pageService._getSinglePage(pageId);
-        questionRepo.save(fillQuestionInfo(questionDTO, page));
-        return "Question created Successfully";
+        Question savedQuestion = questionRepo.save(fillQuestionInfo(questionDTO, page));
+        return savedQuestion.getId();
     }
 
     private Question fillQuestionInfo(QuestionDTO questionDTO, Page page) {

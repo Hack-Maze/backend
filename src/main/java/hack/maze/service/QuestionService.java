@@ -8,7 +8,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 public interface QuestionService {
-    String createQuestion(long pageId, QuestionDTO questionDTO);
+    Long createQuestion(long pageId, QuestionDTO questionDTO);
     QuestionResponseDTO getSingleQuestion(long questionId);
     Question _getSingleQuestion(long questionId);
     String updateQuestion(long questionId, QuestionDTO questionDTO) throws AccessDeniedException;
