@@ -2,6 +2,7 @@ package hack.maze.filter;
 
 import hack.maze.entity.AppUser;
 import hack.maze.service.UserService;
+import hack.maze.utils.GlobalMethods;
 import hack.maze.utils.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +22,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 import static hack.maze.constant.SecurityConstant.TOKEN_PREFIX;
+import static hack.maze.utils.GlobalMethods.isAuthEndpoint;
+import static hack.maze.utils.GlobalMethods.isSwaggerEndpoint;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component
@@ -52,16 +55,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(TOKEN_PREFIX.length());
         userId = (long) (int) jwtUtils.extractClaims(jwt).get("userId");
 
-        if (!isAuthenticationEndpoint(request) && userId != 0 && SecurityContextHolder.getContext().getAuthentication() == null) {
-            getUserAndPerformAuthentication(request, jwt, userId);
-        } else {
-            logger.warn("No Token Provided");
+        if (!isSwaggerEndpoint(request)) {
+            if (!isAuthEndpoint(request) && userId != 0 && SecurityContextHolder.getContext().getAuthentication() == null) {
+                getUserAndPerformAuthentication(request, jwt, userId);
+            } else {
+                logger.warn("No Token Provided");
+            }
         }
         filterChain.doFilter(request, response);
-    }
-
-    private boolean isAuthenticationEndpoint(HttpServletRequest request) {
-        return request.getServletPath().contains("auth");
     }
 
     private void getUserAndPerformAuthentication(HttpServletRequest request, String jwt, long userId) {

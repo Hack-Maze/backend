@@ -18,6 +18,8 @@ import java.io.IOException;
 import static hack.maze.config.UserContext.clearContext;
 import static hack.maze.config.UserContext.setCurrentUser;
 import static hack.maze.constant.SecurityConstant.TOKEN_PREFIX;
+import static hack.maze.utils.GlobalMethods.isAuthEndpoint;
+import static hack.maze.utils.GlobalMethods.isSwaggerEndpoint;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component
@@ -37,7 +39,7 @@ public class GetCurrentUserFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         try {
-            if (!isAuthEndpoint(request)) {
+            if (!isAuthEndpoint(request) && !isSwaggerEndpoint(request)) {
                 String authHeader = request.getHeader(AUTHORIZATION);
                 String jwt = authHeader.substring(TOKEN_PREFIX.length());
                 long userId = (long) (int) jwtUtils.extractClaims(jwt).get("userId");
@@ -52,7 +54,5 @@ public class GetCurrentUserFilter extends OncePerRequestFilter {
 
     }
 
-    private boolean isAuthEndpoint(HttpServletRequest request) {
-        return request.getServletPath().contains("auth");
-    }
+
 }

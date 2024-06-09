@@ -32,6 +32,8 @@ public class SecurityFilterChainConfig {
                 .requestMatchers(HttpMethod.POST,  "/api/v1/auth/register", "/api/v1/auth/login")
                 .permitAll()
                 .requestMatchers(HttpMethod.PUT, "/azure").permitAll() // for test
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
                 .anyRequest()
                 .authenticated()
             ).sessionManagement(config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
