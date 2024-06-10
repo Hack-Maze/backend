@@ -4,6 +4,7 @@ import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.entity.Maze;
+import hack.maze.entity.Profile;
 import hack.maze.entity.Tag;
 import hack.maze.repository.MazeRepo;
 import hack.maze.service.AzureService;
@@ -130,6 +131,22 @@ public class MazeServiceImpl implements MazeService {
         }
         return "maze with id = [" + mazeId + "] updated successfully";
     }
+
+    @Override
+    public boolean isCurrentUserEnrolledInMaze(long mazeId) {
+        Maze maze = _getSingleMaze(mazeId);
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        return maze.getEnrolledUsers().contains(profile);
+    }
+
+    @Override
+    public boolean isCurrentUserSolverInMaze(long mazeId) {
+        Maze maze = _getSingleMaze(mazeId);
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        return maze.getSolvers().contains(profile);
+    }
+
+
 
 
 }

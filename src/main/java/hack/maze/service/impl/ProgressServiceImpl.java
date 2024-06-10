@@ -107,4 +107,10 @@ public class ProgressServiceImpl implements ProgressService {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
         return fromProfilePageProgressToProfilePageProgressDTO(profilePageProgressService.getProfilePagesProgressByProfileId(profile.getId()));
     }
+
+    @Override
+    public ProfilePageProgressDTO getProfilePagesProgressInSinglePage(long pageId) {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        return fromProfilePageProgressToProfilePageProgressDTO(profilePageProgressService.getSingleProfilePagesProgressByProfileIdAndPageId(profile.getId(), pageId));
+    }
 }

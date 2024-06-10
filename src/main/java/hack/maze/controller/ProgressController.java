@@ -49,4 +49,13 @@ public class ProgressController {
         }
     }
 
+    @GetMapping("/get-profile-page-progress/{pageId}")
+    public ResponseEntity<?> getProfilePagesProgress(@PathVariable long pageId) {
+        try {
+            return ResponseEntity.ok(progressService.getProfilePagesProgressInSinglePage(pageId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 }

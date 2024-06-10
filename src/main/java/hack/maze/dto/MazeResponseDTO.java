@@ -10,6 +10,6 @@ import java.util.List;
 @Builder
 public record MazeResponseDTO(Long id, String title, String description, String summary, LocalDateTime createdAt,
                               boolean visibility, String image, Difficulty difficulty, MazeProfileDTO author,
-                              List<MazeProfileDTO> enrolledUsers, List<MazeProfileDTO> solvers, List<Tag> tags,
+                              int numberOfEnrolledUsers, int numberOfSolvers, List<Tag> tags,
                               List<MazePageDTO> pages) {
 }

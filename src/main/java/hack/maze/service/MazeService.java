@@ -17,4 +17,6 @@ public interface MazeService {
     Maze _getSingleMaze(long mazeId);
     String deleteMaze(long mazeId) throws AccessDeniedException;
     String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) throws IOException;
+    boolean isCurrentUserEnrolledInMaze(long mazeId);
+    boolean isCurrentUserSolverInMaze(long mazeId);
 }

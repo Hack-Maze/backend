@@ -14,4 +14,7 @@ public interface ProfilePageProgressRepo extends JpaRepository<ProfilePageProgre
 
     @Query("SELECT ppp FROM ProfilePageProgress ppp WHERE ppp.profile.id = ?1")
     List<ProfilePageProgress> getProfilePagesProgressByProfileId(long pageOId);
+
+    @Query("SELECT ppp FROM ProfilePageProgress ppp WHERE ppp.profile.id = ?1 AND ppp.page.id = ?2")
+    Optional<ProfilePageProgress> getSingleProfilePagesProgressByProfileIdAndPageId(long profileId, long pageId);
 }

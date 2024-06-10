@@ -62,5 +62,23 @@ public class MazeController {
         }
     }
 
+    @GetMapping("/is-current-user-enrolled/{mazeId}")
+    public ResponseEntity<?> isCurrentUserEnrolledInMaze(@PathVariable long mazeId) {
+        try {
+            return ResponseEntity.ok(mazeService.isCurrentUserEnrolledInMaze(mazeId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/is-current-user-solver/{mazeId}")
+    public ResponseEntity<?> isCurrentUserSolverInMaze(@PathVariable long mazeId) {
+        try {
+            return ResponseEntity.ok(mazeService.isCurrentUserSolverInMaze(mazeId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 
 }

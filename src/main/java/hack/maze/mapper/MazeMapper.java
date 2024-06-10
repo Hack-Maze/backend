@@ -31,8 +31,8 @@ public class MazeMapper {
                 .image(maze.getImage())
                 .difficulty(maze.getDifficulty())
                 .author(fromProfileToMazeProfileDTO(maze.getAuthor()))
-                .enrolledUsers(fromProfileToMazeProfileDTO(maze.getEnrolledUsers()))
-                .solvers(fromProfileToMazeProfileDTO(maze.getSolvers()))
+                .numberOfEnrolledUsers(maze.getEnrolledUsers().size())
+                .numberOfSolvers(maze.getSolvers().size())
                 .tags(maze.getTags())
                 .pages(fromPageToMazePageDTO(maze.getPages()))
                 .build();
@@ -51,6 +51,7 @@ public class MazeMapper {
                 .summary(maze.getSummary())
                 .description(maze.getDescription())
                 .image(maze.getImage())
+                .author(fromProfileToMazeProfileDTO(maze.getAuthor()))
                 .build();
     }
 
