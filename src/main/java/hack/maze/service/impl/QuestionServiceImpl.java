@@ -99,8 +99,9 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public String getQuestionAnswer(long questionId) {
+    public String getQuestionAnswer(long questionId) throws AccessDeniedException {
         Question question = _getSingleQuestion(questionId);
+        checkUserAuthority(getCurrentUser(), question);
         return question.getAnswer();
     }
 }

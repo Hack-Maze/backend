@@ -14,5 +14,5 @@ public interface QuestionService {
     String updateQuestion(long questionId, QuestionDTO questionDTO) throws AccessDeniedException;
     String deleteQuestion(long questionId) throws AccessDeniedException;
     String getQuestionHint(long questionId);
-    String getQuestionAnswer(long questionId);
+    String getQuestionAnswer(long questionId) throws AccessDeniedException;
 }
