@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_BADGES;
 import static hack.maze.utils.GlobalMethods.nullMsg;

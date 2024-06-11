@@ -1,7 +1,6 @@
 package hack.maze.service.impl;
 
 import hack.maze.entity.ProfilePageProgress;
-import hack.maze.exceptions.ResourceAlreadyExistException;
 import hack.maze.repository.ProfilePageProgressRepo;
 import hack.maze.service.ProfilePageProgressService;
 import lombok.RequiredArgsConstructor;

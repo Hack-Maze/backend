@@ -50,7 +50,7 @@ public class MazeServiceImpl implements MazeService {
         return savedMaze.getId();
     }
 
-    private Maze fillMazeInfo(UpdateMazeDTO updateMazeDTO) throws IOException {
+    private Maze fillMazeInfo(UpdateMazeDTO updateMazeDTO) {
         return Maze
                 .builder()
                 .visibility(true)

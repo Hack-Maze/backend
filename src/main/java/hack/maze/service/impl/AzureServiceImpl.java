@@ -5,7 +5,6 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.models.BlobCorsRule;
 import com.azure.storage.blob.models.BlobServiceProperties;
-import com.azure.storage.blob.models.PublicAccessType;
 import hack.maze.service.AzureService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

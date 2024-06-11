@@ -6,7 +6,6 @@ import hack.maze.dto.RegisterDTO;
 import hack.maze.entity.AppUser;
 import hack.maze.entity.Profile;
 import hack.maze.entity.Role;
-import hack.maze.exceptions.UserAlreadyFoundException;
 import hack.maze.repository.ProfileRepo;
 import hack.maze.repository.UserRepo;
 import hack.maze.service.AuthenticationService;

@@ -1,6 +1,5 @@
 package hack.maze.service.impl;
 
-import hack.maze.config.UserContext;
 import hack.maze.dto.ProfileMazeProgressDTO;
 import hack.maze.dto.ProfilePageProgressDTO;
 import hack.maze.entity.Maze;
@@ -10,8 +9,6 @@ import hack.maze.entity.ProfileMazeProgress;
 import hack.maze.entity.ProfilePageProgress;
 import hack.maze.entity.ProfileQuestionProgress;
 import hack.maze.entity.Question;
-import hack.maze.mapper.ProfileMazeProgressMapper;
-import hack.maze.mapper.ProfilePageProgressMapper;
 import hack.maze.repository.ProfileQuestionProgressRepo;
 import hack.maze.service.*;
 import lombok.RequiredArgsConstructor;
@@ -42,10 +39,12 @@ public class ProgressServiceImpl implements ProgressService {
     private final ProfileQuestionProgressRepo profileQuestionProgressRepo;
 
     @Override
+    @Transactional
     public String enrollUserToMaze(long mazeId) {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
         profileMazeProgressService.checkIfUserAlreadyEnrolledInThisMaze(profile.getId(), mazeId);
         Maze maze = mazeService._getSingleMaze(mazeId);
+        updateEnrolledUserInMaze(maze, profile);
         ProfileMazeProgress profileMazeProgress = ProfileMazeProgress
                 .builder()
                 .maze(maze)
@@ -54,6 +53,13 @@ public class ProgressServiceImpl implements ProgressService {
                 .build();
         String ret = profileMazeProgressService.createNewProfileMazeProgress(profileMazeProgress);
         return "User enrolled in maze with title = [" + maze.getTitle() + "] successfully | " + ret;
+    }
+
+    @Transactional
+    protected void updateEnrolledUserInMaze(Maze maze, Profile profile) {
+        List<Profile> enrolledUsers = maze.getEnrolledUsers();
+        enrolledUsers.add(profile);
+        maze.setEnrolledUsers(enrolledUsers);
     }
 
     @Override
