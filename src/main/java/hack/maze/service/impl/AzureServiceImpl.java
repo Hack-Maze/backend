@@ -1,9 +1,11 @@
 package hack.maze.service.impl;
 
+import com.azure.core.http.rest.PagedIterable;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.models.BlobCorsRule;
+import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobServiceProperties;
 import hack.maze.service.AzureService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -51,6 +54,22 @@ public class AzureServiceImpl implements AzureService {
         blobClient.upload(image.getInputStream(), image.getSize(), true);
 
         return blobClient.getBlobUrl();
+    }
+
+    @Override
+    public void removeImageFromAzure(String containerBlobName, String prefix) {
+        BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containerBlobName);
+        PagedIterable<BlobItem> blobs = blobContainerClient.listBlobsByHierarchy(prefix);
+        List<String> blobNames = new ArrayList<>();
+        for (BlobItem blobItem : blobs) {
+            blobNames.add(blobItem.getName());
+        }
+
+        // delete each blob
+        for (String blobName : blobNames) {
+            BlobClient blobClient = blobContainerClient.getBlobClient(blobName);
+            blobClient.delete();
+        }
     }
 
     private boolean checkImage(MultipartFile image) {

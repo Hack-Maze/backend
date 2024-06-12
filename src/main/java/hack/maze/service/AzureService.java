@@ -7,5 +7,6 @@ import java.io.IOException;
 
 public interface AzureService {
     String sendImageToAzure(MultipartFile image, String containerBlobName, Long blobName) throws IOException;
+    void removeImageFromAzure(String containerBlobName, String imagePath);
     BlobContainerClient createBlobContainerIfNotExist(String containerBlobName);
 }

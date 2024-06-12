@@ -98,6 +98,7 @@ public class MazeServiceImpl implements MazeService {
     public String deleteMaze(long mazeId) throws AccessDeniedException {
         Maze maze = _getSingleMaze(mazeId);
         checkUserAuthority(getCurrentUser(), maze);
+        azureService.removeImageFromAzure(IMAGES_BLOB_CONTAINER_MAZES, maze.getId().toString() + "/");
         mazeRepo.deleteById(maze.getId());
         log.warn("maze with id = [{}] will be deleted completely", mazeId);
         return "Maze with id = [" + mazeId + "] deleted successfully";
