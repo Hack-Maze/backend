@@ -1,7 +1,10 @@
 package hack.maze.service.impl;
 
+import hack.maze.constant.ApplicationConstant;
 import hack.maze.dto.QuestionDTO;
 import hack.maze.dto.QuestionResponseDTO;
+import hack.maze.entity.Difficulty;
+import hack.maze.entity.Maze;
 import hack.maze.entity.Page;
 import hack.maze.entity.Question;
 import hack.maze.repository.QuestionRepo;
@@ -17,6 +20,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
+import static hack.maze.constant.ApplicationConstant.*;
 import static hack.maze.mapper.QuestionMapper.fromQuestionToQuestionResponseDTO;
 import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
@@ -31,11 +35,25 @@ public class QuestionServiceImpl implements QuestionService {
     private final UserService userService;
 
     @Override
+    @Transactional
     public Long createQuestion(long pageId, QuestionDTO questionDTO) {
         validateQuestionInfo(questionDTO);
         Page page = pageService._getSinglePage(pageId);
+        checkPointLimitExceeds(questionDTO.points(), page.getMaze());
         Question savedQuestion = questionRepo.save(fillQuestionInfo(questionDTO, page));
+        updateMazeTotalPoints(page.getMaze(), savedQuestion.getPoints());
         return savedQuestion.getId();
+    }
+
+    @Transactional
+    protected void updateMazeTotalPoints(Maze maze, int questionPoints) {
+        maze.setTotalPoints(maze.getTotalPoints() + questionPoints);
+    }
+
+    private void checkPointLimitExceeds(int points, Maze maze) {
+        if ((points + maze.getTotalPoints()) > getMaxMazePoints(maze.getDifficulty())) {
+            throw new RuntimeException("You have exceeded the maximum number of points");
+        }
     }
 
     private Question fillQuestionInfo(QuestionDTO questionDTO, Page page) {
@@ -46,7 +64,25 @@ public class QuestionServiceImpl implements QuestionService {
                 .answer(questionDTO.answer())
                 .hint(questionDTO.hint())
                 .page(page)
+                .points(questionDTO.points())
                 .build();
+    }
+
+    private int getMaxMazePoints(Difficulty mazeDifficulty) {
+        if (mazeDifficulty == Difficulty.FUNDAMENTAL) {
+            return FUNDAMENTAL_POINTS;
+        }
+        if (mazeDifficulty == Difficulty.EASY) {
+            return EASY_POINTS;
+        }
+        if (mazeDifficulty == Difficulty.MEDIUM) {
+            return MEDIUM_POINTS;
+        }
+        if (mazeDifficulty == Difficulty.HARD) {
+            return HARD_POINTS;
+        } else {
+            throw new IllegalStateException("Please specify valid Difficulty value");
+        }
     }
 
     private void validateQuestionInfo(QuestionDTO questionDTO) {

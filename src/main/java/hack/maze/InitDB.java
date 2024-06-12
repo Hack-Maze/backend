@@ -3,6 +3,7 @@ package hack.maze;
 import hack.maze.entity.*;
 import hack.maze.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +27,9 @@ public class InitDB {
     private final ProfileMazeProgressRepo profileMazeProgressRepo;
     private final ProfilePageProgressRepo profilePageProgressRepo;
     private final ProfileQuestionProgressRepo profileQuestionProgressRepo;
+
+    @Value("${pass-from-env}")
+    private String passFromEnv;
 
     private void init() {
         // create badge
@@ -99,6 +103,7 @@ public class InitDB {
                 .content("content")
                 .answer("answer")
                 .page(savedPage)
+                .points(100)
                 .build());
 
         // create user progress
@@ -139,16 +144,18 @@ public class InitDB {
 //                        .build());
 //                profileRepo.save(Profile.builder().appUser(savedUser).build());
 //            }
-
+//
             if (userRepo.findByUsername("admin").isEmpty()) {
-                userRepo.save(AppUser
+                AppUser admin = userRepo.save(AppUser
                         .builder()
                         .email("admin@admin.admin")
-                        .username("admin")
-                        .password("$2a$12$ugoECT/fnHBIRgczCJbe2eOKRDgKFrjTOKuG3EViEX3dk8HGo1r9C")
+                        .username("HackMaze")
+                        .password(passwordEncoder.encode(passFromEnv))
                         .role(Role.ADMIN)
                         .createdAt(LocalDateTime.now())
                         .build());
+                profileRepo.save(Profile.builder().appUser(admin).build());
+
             }
 
 

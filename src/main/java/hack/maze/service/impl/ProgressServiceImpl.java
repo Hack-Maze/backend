@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
-import static hack.maze.constant.ApplicationConstant.SOLVE_POINTS;
 import static hack.maze.mapper.ProfileMazeProgressMapper.*;
 import static hack.maze.mapper.ProfilePageProgressMapper.fromProfilePageProgressToProfilePageProgressDTO;
 
@@ -76,7 +75,7 @@ public class ProgressServiceImpl implements ProgressService {
                 .profilePageProgress(profilePageProgress)
                 .build());
         profile.setLastQuestionSolvedAt(savedProfileQuestionProgress.getSolvedAt());
-        profile.setRank(profile.getRank() + SOLVE_POINTS);
+        profile.setRank(profile.getRank() + question.getPoints());
         return "User progress updated successfully";
     }
 

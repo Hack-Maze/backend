@@ -35,6 +35,7 @@ public class MazeMapper {
                 .numberOfSolvers(maze.getSolvers().size())
                 .tags(maze.getTags())
                 .pages(fromPageToMazePageDTO(maze.getPages()))
+                .totalPoints(maze.getTotalPoints())
                 .build();
     }
 
@@ -52,6 +53,7 @@ public class MazeMapper {
                 .description(maze.getDescription())
                 .image(maze.getImage())
                 .author(fromProfileToMazeProfileDTO(maze.getAuthor()))
+                .totalPoints(maze.getTotalPoints())
                 .build();
     }
 

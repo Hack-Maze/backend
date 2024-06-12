@@ -29,6 +29,7 @@ public class Question {
     private String content;
     private String answer;
     private String hint;
+    private int points;
 
     @ManyToOne
     @JsonBackReference

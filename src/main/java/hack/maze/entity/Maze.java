@@ -34,6 +34,7 @@ public class Maze {
     private LocalDateTime createdAt;
     private boolean visibility;
     private String image;
+    private int totalPoints;
 
     @Enumerated(EnumType.STRING)
     private Difficulty difficulty;

@@ -8,5 +8,5 @@ import lombok.Builder;
 public record MazeSimpleDTO(long id, String title,
                             String description, String image,
                             String summary, Difficulty difficulty,
-                            MazeProfileDTO author) {
+                            MazeProfileDTO author, int totalPoints) {
 }

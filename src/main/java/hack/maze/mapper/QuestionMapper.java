@@ -18,6 +18,7 @@ public class QuestionMapper {
                 .id(question.getId())
                 .type(question.getType())
                 .content(question.getContent())
+                .points(question.getPoints())
                 .build();
     }
 }
