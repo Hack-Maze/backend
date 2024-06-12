@@ -7,6 +7,7 @@ import hack.maze.entity.Question;
 import hack.maze.repository.QuestionRepo;
 import hack.maze.service.PageService;
 import hack.maze.service.QuestionService;
+import hack.maze.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     private final QuestionRepo questionRepo;
     private final PageService pageService;
+    private final UserService userService;
 
     @Override
     public Long createQuestion(long pageId, QuestionDTO questionDTO) {
@@ -68,7 +70,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public String updateQuestion(long questionId, QuestionDTO questionDTO) throws AccessDeniedException {
         Question targetQuestion = _getSingleQuestion(questionId);
-        checkUserAuthority(getCurrentUser(), targetQuestion);
+        checkUserAuthority(userService.getSingleUser(getCurrentUser()), targetQuestion);
         if (questionDTO.content() != null) {
             targetQuestion.setContent(questionDTO.content());
         }
@@ -87,7 +89,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public String deleteQuestion(long questionId) throws AccessDeniedException {
         Question targetQuestion = _getSingleQuestion(questionId);
-        checkUserAuthority(getCurrentUser(), targetQuestion);
+        checkUserAuthority(userService.getSingleUser(getCurrentUser()), targetQuestion);
         questionRepo.delete(targetQuestion);
         return "Question with id = [" + questionId + "] deleted successfully";
     }
@@ -101,7 +103,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public String getQuestionAnswer(long questionId) throws AccessDeniedException {
         Question question = _getSingleQuestion(questionId);
-        checkUserAuthority(getCurrentUser(), question);
+        checkUserAuthority(userService.getSingleUser(getCurrentUser()), question);
         return question.getAnswer();
     }
 }

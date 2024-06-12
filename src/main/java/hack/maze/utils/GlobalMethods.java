@@ -1,8 +1,6 @@
 package hack.maze.utils;
 
-import hack.maze.entity.Maze;
-import hack.maze.entity.Page;
-import hack.maze.entity.Question;
+import hack.maze.entity.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,22 +9,22 @@ import java.util.Objects;
 @Slf4j
 public class GlobalMethods {
 
-    private static void checkUserAuthority(Long userThatWantToGainAccess, Long authorId) throws AccessDeniedException {
-        if (!Objects.equals(userThatWantToGainAccess, authorId)) {
+    private static void checkUserAuthority(AppUser appUser, Long authorId) throws AccessDeniedException {
+        if (appUser.getRole() != Role.ADMIN && !Objects.equals(appUser.getId(), authorId)) {
             throw new AccessDeniedException("Access denied!");
         }
     }
 
-    public static void checkUserAuthority(Long id, Maze targetMaze) throws AccessDeniedException {
-        checkUserAuthority(id, targetMaze.getAuthor().getAppUser().getId());
+    public static void checkUserAuthority(AppUser appUser, Maze targetMaze) throws AccessDeniedException {
+        checkUserAuthority(appUser, targetMaze.getAuthor().getAppUser().getId());
     }
 
-    public static void checkUserAuthority(Long id, Page tagetPage) throws AccessDeniedException {
-        checkUserAuthority(id, tagetPage.getMaze().getAuthor().getAppUser().getId());
+    public static void checkUserAuthority(AppUser appUser, Page tagetPage) throws AccessDeniedException {
+        checkUserAuthority(appUser, tagetPage.getMaze().getAuthor().getAppUser().getId());
     }
 
-    public static void checkUserAuthority(Long id, Question targetQuestion) throws AccessDeniedException {
-        checkUserAuthority(id, targetQuestion.getPage().getMaze().getAuthor().getAppUser().getId());
+    public static void checkUserAuthority(AppUser appUser, Question targetQuestion) throws AccessDeniedException {
+        checkUserAuthority(appUser, targetQuestion.getPage().getMaze().getAuthor().getAppUser().getId());
     }
 
     public static String nullMsg(String s) {

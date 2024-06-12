@@ -7,10 +7,7 @@ import hack.maze.entity.Maze;
 import hack.maze.entity.Profile;
 import hack.maze.entity.Tag;
 import hack.maze.repository.MazeRepo;
-import hack.maze.service.AzureService;
-import hack.maze.service.MazeService;
-import hack.maze.service.ProfileService;
-import hack.maze.service.TagService;
+import hack.maze.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,6 +34,7 @@ public class MazeServiceImpl implements MazeService {
 
     private final MazeRepo mazeRepo;
     private final TagService tagService;
+    private final UserService userService;
     private final AzureService azureService;
     private final ProfileService profileService;
 
@@ -97,7 +95,7 @@ public class MazeServiceImpl implements MazeService {
     @Override
     public String deleteMaze(long mazeId) throws AccessDeniedException {
         Maze maze = _getSingleMaze(mazeId);
-        checkUserAuthority(getCurrentUser(), maze);
+        checkUserAuthority(userService.getSingleUser(getCurrentUser()), maze);
         azureService.removeImageFromAzure(IMAGES_BLOB_CONTAINER_MAZES, maze.getId().toString() + "/");
         mazeRepo.deleteById(maze.getId());
         log.warn("maze with id = [{}] will be deleted completely", mazeId);
@@ -108,7 +106,7 @@ public class MazeServiceImpl implements MazeService {
     @Transactional
     public String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) throws IOException {
         Maze maze = _getSingleMaze(mazeId);
-        checkUserAuthority(getCurrentUser(), maze);
+        checkUserAuthority(userService.getSingleUser(getCurrentUser()), maze);
         if (updateMazeDTO.title() != null) {
             maze.setTitle(updateMazeDTO.title());
         }

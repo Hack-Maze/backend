@@ -8,6 +8,7 @@ import hack.maze.entity.Page;
 import hack.maze.repository.PageRepo;
 import hack.maze.service.MazeService;
 import hack.maze.service.PageService;
+import hack.maze.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class PageServiceImpl implements PageService {
 
     private final PageRepo pageRepo;
     private final MazeService mazeService;
+    private final UserService userService;
 
     @Override
     public Long createPage(long mazeId, PageRequestDTO pageRequestDTO) {
@@ -73,7 +75,7 @@ public class PageServiceImpl implements PageService {
     @Transactional
     public String updatePage(long pageId, PageRequestDTO pageRequestDTO) throws AccessDeniedException {
         Page taragetPage = _getSinglePage(pageId);
-        checkUserAuthority(getCurrentUser(), taragetPage);
+        checkUserAuthority(userService.getSingleUser(getCurrentUser()), taragetPage);
         if (pageRequestDTO.title() != null) {
             taragetPage.setTitle(pageRequestDTO.title());
         }
@@ -90,7 +92,7 @@ public class PageServiceImpl implements PageService {
     @Override
     public String deletePage(long pageId) throws AccessDeniedException {
         Page taragetPage = _getSinglePage(pageId);
-        checkUserAuthority(getCurrentUser(), taragetPage);
+        checkUserAuthority(userService.getSingleUser(getCurrentUser()), taragetPage);
         pageRepo.delete(taragetPage);
         return "Page with title = [" + taragetPage.getTitle() + "] deleted successfully";
     }

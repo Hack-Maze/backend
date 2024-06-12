@@ -7,6 +7,7 @@ import hack.maze.service.AzureService;
 import hack.maze.service.BadgeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ public class BadgeServiceImpl implements BadgeService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public String createBadge(BadgeDTO badgeDTO) throws IOException {
         Badge badge = new Badge();
         validateBadgeDTOInfo(badgeDTO);
@@ -48,6 +50,7 @@ public class BadgeServiceImpl implements BadgeService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public String updateBadge(long badgeId, BadgeDTO badgeDTO) throws IOException {
         Badge targetBadge = getSingleBadge(badgeId);
         if (badgeDTO.title() != null) {
@@ -60,6 +63,7 @@ public class BadgeServiceImpl implements BadgeService {
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public String deleteBadge(long badgeId) {
         Badge targetBadge = getSingleBadge(badgeId);
         badgeRepo.delete(targetBadge);

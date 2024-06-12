@@ -6,6 +6,7 @@ import hack.maze.repository.TagRepo;
 import hack.maze.service.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ public class TagServiceImpl implements TagService {
     private final TagRepo tagRepo;
 
     @Override
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public String createTag(TagDTO tagDTO) {
         validateTagInfo(tagDTO);
         Tag tag = new Tag();
@@ -41,6 +43,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public String updateTag(long tagId, TagDTO tagDTO) {
         Tag targetTag = getSingleTag(tagId);
         if (tagDTO.title() != null) {
@@ -50,6 +53,7 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public String deleteTag(long tagId) {
         Tag targetTag = getSingleTag(tagId);
         tagRepo.delete(targetTag);

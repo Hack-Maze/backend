@@ -140,6 +140,18 @@ public class InitDB {
 //                profileRepo.save(Profile.builder().appUser(savedUser).build());
 //            }
 
+            if (userRepo.findByUsername("admin").isEmpty()) {
+                userRepo.save(AppUser
+                        .builder()
+                        .email("admin@admin.admin")
+                        .username("admin")
+                        .password("$2a$12$ugoECT/fnHBIRgczCJbe2eOKRDgKFrjTOKuG3EViEX3dk8HGo1r9C")
+                        .role(Role.ADMIN)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+            }
+
+
 
         };
     }
