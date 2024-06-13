@@ -2,13 +2,7 @@ package hack.maze.service.impl;
 
 import hack.maze.dto.ProfileMazeProgressDTO;
 import hack.maze.dto.ProfilePageProgressDTO;
-import hack.maze.entity.Maze;
-import hack.maze.entity.Page;
-import hack.maze.entity.Profile;
-import hack.maze.entity.ProfileMazeProgress;
-import hack.maze.entity.ProfilePageProgress;
-import hack.maze.entity.ProfileQuestionProgress;
-import hack.maze.entity.Question;
+import hack.maze.entity.*;
 import hack.maze.repository.ProfileQuestionProgressRepo;
 import hack.maze.service.*;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +70,20 @@ public class ProgressServiceImpl implements ProgressService {
                 .build());
         profile.setLastQuestionSolvedAt(savedProfileQuestionProgress.getSolvedAt());
         profile.setRank(profile.getRank() + question.getPoints());
+        profile.setLevel(calcUserLevelBasedOnCurrentRank(profile.getRank()));
         return "User progress updated successfully";
+    }
+
+    private Level calcUserLevelBasedOnCurrentRank(int rank) {
+        for (int i = 0; i < Level.values().length; i++) {
+            if (rank <= Level.NOOB.getValue()) {
+                return Level.NOOB;
+            }
+            if (rank <= Level.values()[i].getValue()) {
+                return Level.values()[i - 1];
+            }
+        }
+        return Level.SUPERIOR;
     }
 
     private ProfilePageProgress createPageProgressIfNotExist(Profile profile, long pageId) {

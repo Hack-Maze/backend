@@ -67,7 +67,7 @@ public class InitDB {
                 .job("job")
                 .linkedinLink("linkedinLink")
                 .image("image")
-                .rank(100.0)
+                .rank(100)
                 .badges(List.of(savedBadge))
                 .build());
 

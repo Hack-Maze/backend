@@ -41,7 +41,8 @@ public class Profile {
     private String fullName;
     private String country;
     private String image;
-    private double rank;
+    private int rank;
+    private Level level;
     private String bio;
     private String githubLink;
     private String linkedinLink;

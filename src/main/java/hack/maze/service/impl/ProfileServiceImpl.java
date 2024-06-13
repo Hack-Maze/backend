@@ -21,7 +21,7 @@ import java.util.Objects;
 import static hack.maze.config.UserContext.getCurrentUser;
 import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_PROFILES;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
-import static hack.maze.mapper.MazeMapper.fromProfileToProfileResponseDTO;
+import static hack.maze.mapper.ProfileMapper.fromProfileToProfileResponseDTO;
 
 @Service
 @Slf4j

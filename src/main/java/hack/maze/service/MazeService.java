@@ -1,6 +1,5 @@
 package hack.maze.service;
 
-import hack.maze.dto.CreateMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
