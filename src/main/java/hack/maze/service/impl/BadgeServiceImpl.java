@@ -66,6 +66,7 @@ public class BadgeServiceImpl implements BadgeService {
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public String deleteBadge(long badgeId) {
         Badge targetBadge = getSingleBadge(badgeId);
+        azureService.removeImageFromAzure(IMAGES_BLOB_CONTAINER_BADGES, targetBadge.getId().toString() + "/");
         badgeRepo.delete(targetBadge);
         return "Badge with title = [" + targetBadge.getTitle() + "] deleted successfully";
     }
