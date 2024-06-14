@@ -39,13 +39,20 @@ public class MazeServiceImpl implements MazeService {
     private final ProfileService profileService;
 
     @Override
-//    @Transactional
+    @Transactional
     public Long createMaze(UpdateMazeDTO updateMazeDTO) throws IOException {
         validateUpdateMazeDTO(updateMazeDTO);
+        checkMazeExistence(updateMazeDTO.title());
         Maze savedMaze = mazeRepo.save(fillMazeInfo(updateMazeDTO));
         savedMaze.setImage(azureService.sendImageToAzure(updateMazeDTO.image(), IMAGES_BLOB_CONTAINER_MAZES, savedMaze.getId()));
         mazeRepo.save(savedMaze);
         return savedMaze.getId();
+    }
+
+    private void checkMazeExistence(String title) {
+        if (mazeRepo.findByTitle(title).isPresent()) {
+            throw new RuntimeException("Maze with title = [" + title + "] already exist");
+        }
     }
 
     private Maze fillMazeInfo(UpdateMazeDTO updateMazeDTO) {
