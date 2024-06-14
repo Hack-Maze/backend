@@ -116,11 +116,27 @@ public class ProgressServiceImpl implements ProgressService {
         return Level.SUPERIOR;
     }
 
-    @Transactional
-    protected ProfilePageProgress createPageProgressIfNotExist(Profile profile, long pageId) {
+    private ProfilePageProgress createPageProgressIfNotExist(Profile profile, long pageId) {
         ProfilePageProgress pageProgress = profilePageProgressService.getUserPageProgress(profile.getId(), pageId);
         if (pageProgress == null) {
             Page page = pageService._getSinglePage(pageId);
+            ProfileMazeProgress profileMazeProgress = profileMazeProgressService.getProfileMazeProgressByMazeId(page.getMaze().getId());
+            ProfilePageProgress profilePageProgress = ProfilePageProgress
+                    .builder()
+                    .profile(profile)
+                    .numberOfSolvedQuestions(0)
+                    .mazeProgress(profileMazeProgress)
+                    .isCompleted(false)
+                    .page(page)
+                    .build();
+            return profilePageProgressService._createNewProfilePageProgress(profilePageProgress);
+        }
+        return pageProgress;
+    }
+
+    private ProfilePageProgress createPageProgressIfNotExist(Profile profile, Page page) {
+        ProfilePageProgress pageProgress = profilePageProgressService.getUserPageProgress(profile.getId(), page.getId());
+        if (pageProgress == null) {
             ProfileMazeProgress profileMazeProgress = profileMazeProgressService.getProfileMazeProgressByMazeId(page.getMaze().getId());
             ProfilePageProgress profilePageProgress = ProfilePageProgress
                     .builder()
@@ -157,5 +173,17 @@ public class ProgressServiceImpl implements ProgressService {
     public ProfilePageProgressDTO getProfilePagesProgressInSinglePage(long pageId) {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
         return fromProfilePageProgressToProfilePageProgressDTO(profilePageProgressService.getUserPageProgress(profile.getId(), pageId));
+    }
+
+    @Override
+    public String markPageAsCompleted(long pageId) {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        Page page = pageService._getSinglePage(pageId);
+        if (page.getQuestions().isEmpty()) {
+            createPageProgressIfNotExist(profile, page);
+            return "Page with id = [" + pageId + "] mark as completed";
+        } else {
+            return "Can't mark this page as completed, you should solve the questions first";
+        }
     }
 }

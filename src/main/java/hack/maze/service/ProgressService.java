@@ -12,4 +12,5 @@ public interface ProgressService {
     List<ProfileMazeProgressDTO> getProfileMazesProgress();
     List<ProfilePageProgressDTO> getProfilePagesProgress();
     ProfilePageProgressDTO getProfilePagesProgressInSinglePage(long pageId);
+    String markPageAsCompleted(long pageId);
 }

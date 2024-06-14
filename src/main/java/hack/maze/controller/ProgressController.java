@@ -58,4 +58,13 @@ public class ProgressController {
         }
     }
 
+    @PostMapping("/mark-page-as-complete/{pageId}")
+    public ResponseEntity<?> markPageAsComplete(@PathVariable long pageId) {
+        try {
+            return ResponseEntity.ok(progressService.getProfilePagesProgressInSinglePage(pageId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 }

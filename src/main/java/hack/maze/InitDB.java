@@ -145,16 +145,16 @@ public class InitDB {
 //                profileRepo.save(Profile.builder().appUser(savedUser).build());
 //            }
 //
-            if (userRepo.findByUsername("admin").isEmpty()) {
-                AppUser admin = userRepo.save(AppUser
-                        .builder()
-                        .email("admin@admin.admin")
-                        .username("HackMaze")
-                        .password(passwordEncoder.encode(passFromEnv))
-                        .role(Role.ADMIN)
-                        .createdAt(LocalDateTime.now())
-                        .build());
-                profileRepo.save(Profile.builder().appUser(admin).build());
+//            if (userRepo.findByUsername("admin").isEmpty()) {
+//                AppUser admin = userRepo.save(AppUser
+//                        .builder()
+//                        .email("admin@admin.admin")
+//                        .username("HackMaze")
+//                        .password(passwordEncoder.encode(passFromEnv))
+//                        .role(Role.ADMIN)
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//                profileRepo.save(Profile.builder().appUser(admin).build());
 
             }
 
