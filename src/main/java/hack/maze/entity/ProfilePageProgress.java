@@ -38,6 +38,9 @@ public class ProfilePageProgress {
     @JoinColumn(name = "page_id", referencedColumnName = "id")
     private Page page;
 
+    @ManyToOne
+    private ProfileMazeProgress mazeProgress;
+
     @OneToMany(mappedBy = "profilePageProgress", cascade = CascadeType.REMOVE)
     @JsonManagedReference
     private List<ProfileQuestionProgress> profileQuestionProgresses;

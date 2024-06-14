@@ -8,5 +8,4 @@ public interface ProfilePageProgressService {
     ProfilePageProgress _createNewProfilePageProgress(ProfilePageProgress profilePageProgress);
     ProfilePageProgress getUserPageProgress(long profileId, long pageId);
     List<ProfilePageProgress> getProfilePagesProgressByProfileId(long profileId);
-    ProfilePageProgress getSingleProfilePagesProgressByProfileIdAndPageId(long profileId, long pageId);
 }

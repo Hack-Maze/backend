@@ -34,4 +34,9 @@ public class ProfileMazeProgressServiceImpl implements ProfileMazeProgressServic
     public List<ProfileMazeProgress> getProfileMazesProgressByProfileId(long profileId) {
         return profileMazeProgressRepo.getProfileMazesProgressByProfileId(profileId);
     }
+
+    @Override
+    public ProfileMazeProgress getProfileMazeProgressByMazeId(long mazeId) {
+        return profileMazeProgressRepo.getProfileMazeProgressByMazeId(mazeId);
+    }
 }

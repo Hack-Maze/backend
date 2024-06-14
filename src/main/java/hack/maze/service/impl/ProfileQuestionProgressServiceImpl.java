@@ -1,10 +1,9 @@
 package hack.maze.service.impl;
 
-import hack.maze.dto.MazeProfileDTO;
 import hack.maze.dto.ProfileLeaderboardDTO;
 import hack.maze.entity.Profile;
+import hack.maze.entity.ProfileMazeProgress;
 import hack.maze.entity.ProfileQuestionProgress;
-import hack.maze.mapper.ProfileMapper;
 import hack.maze.repository.ProfileQuestionProgressRepo;
 import hack.maze.service.ProfileQuestionProgressService;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +16,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static hack.maze.mapper.ProfileMapper.fromProfileToMazeProfileDTO;
 
 @Service
 @Slf4j
@@ -40,14 +37,28 @@ public class ProfileQuestionProgressServiceImpl implements ProfileQuestionProgre
         }
 
         return profileScores.entrySet().stream()
-                .map(entry -> ProfileLeaderboardDTO
-                        .builder()
-                        .profileId(entry.getKey().getId())
-                        .username(entry.getKey().getAppUser().getUsername())
-                        .image(entry.getKey().getImage())
-                        .score(entry.getValue())
-                        .build())
+                .map(entry -> {
+                    Profile profile = entry.getKey();
+                    return ProfileLeaderboardDTO
+                            .builder()
+                            .profileId(profile.getId())
+                            .username(profile.getAppUser().getUsername())
+                            .image(profile.getImage())
+                            .level(profile.getLevel())
+                            .country(profile.getCountry())
+                            .solvedMazes(calcProfileSolvedMazes(profile.getProfileMazeProgresses()))
+                            .score(entry.getValue())
+                            .build();
+                })
                 .sorted(Comparator.comparingInt(ProfileLeaderboardDTO::score).reversed())
                 .toList();
+    }
+
+    private int calcProfileSolvedMazes(List<ProfileMazeProgress> profileMazeProgresses) {
+        int sum = 0;
+        for (ProfileMazeProgress pmp: profileMazeProgresses) {
+            if (pmp.isCompleted()) sum += 1;
+        }
+        return sum;
     }
 }

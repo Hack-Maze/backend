@@ -14,4 +14,6 @@ public interface ProfileMazeProgressRepo extends JpaRepository<ProfileMazeProgre
     @Query("SELECT pmp FROM ProfileMazeProgress pmp WHERE pmp.profile.id = ?1")
     List<ProfileMazeProgress> getProfileMazesProgressByProfileId(long mazeId);
 
+    @Query("SELECT pmp FROM ProfileMazeProgress pmp WHERE pmp.maze.id = ?1")
+    ProfileMazeProgress getProfileMazeProgressByMazeId(long mazeId);
 }

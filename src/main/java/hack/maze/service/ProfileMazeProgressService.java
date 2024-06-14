@@ -9,4 +9,5 @@ public interface ProfileMazeProgressService {
     void checkIfUserAlreadyEnrolledInThisMaze(long profileId, long mazeId);
     String createNewProfileMazeProgress(ProfileMazeProgress profileMazeProgress);
     List<ProfileMazeProgress> getProfileMazesProgressByProfileId(long profileId);
+    ProfileMazeProgress getProfileMazeProgressByMazeId(long mazeId);
 }

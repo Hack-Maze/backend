@@ -30,9 +30,4 @@ public class ProfilePageProgressServiceImpl implements ProfilePageProgressServic
     public List<ProfilePageProgress> getProfilePagesProgressByProfileId(long profileId) {
         return profilePageProgressRepo.getProfilePagesProgressByProfileId(profileId);
     }
-
-    @Override
-    public ProfilePageProgress getSingleProfilePagesProgressByProfileIdAndPageId(long profileId, long pageId) {
-        return profilePageProgressRepo.getSingleProfilePagesProgressByProfileIdAndPageId(profileId, pageId).orElseThrow(() -> new RuntimeException("profile with id = [" + profileId + "] didn't have any progress in page with id = [" + pageId + "]"));
-    }
 }

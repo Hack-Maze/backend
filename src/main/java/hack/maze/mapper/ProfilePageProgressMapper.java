@@ -27,8 +27,8 @@ public class ProfilePageProgressMapper {
                 .page(fromPageToPageProgressDTO(profilePageProgress.getPage()))
                 .questions(profileQuestionProgresses)
                 .totalNumberOfQuestions(questions.size())
-                .numberOfSolvedQuestions(profileQuestionProgresses.size())
-                .isCompleted(profileQuestionProgresses.size() == questions.size())
+                .numberOfSolvedQuestions(profilePageProgress.getNumberOfSolvedQuestions())
+                .isCompleted(profilePageProgress.isCompleted())
                 .build();
     }
 

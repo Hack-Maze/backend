@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
-import static hack.maze.mapper.ProfileMazeProgressMapper.*;
+import static hack.maze.mapper.ProfileMazeProgressMapper.fromProfileMazeProgressToProfileMazeProgressDTO;
 import static hack.maze.mapper.ProfilePageProgressMapper.fromProfilePageProgressToProfilePageProgressDTO;
 
 @Service
@@ -62,16 +62,46 @@ public class ProgressServiceImpl implements ProgressService {
         ProfilePageProgress profilePageProgress = createPageProgressIfNotExist(profile, pageId);
         Question question = questionService._getSingleQuestion(solvedQuestionId);
         checkAnswer(question.getAnswer(), answer);
-        ProfileQuestionProgress savedProfileQuestionProgress = profileQuestionProgressRepo.save(ProfileQuestionProgress
+        ProfileQuestionProgress savedProfileQuestionProgress = saveQuestionProgress(question, profilePageProgress);
+        updateProfileInfo(profile, savedProfileQuestionProgress, question);
+        updateProfilePageProgressInfo(profilePageProgress);
+        checkMazeCompletion(question.getPage().getMaze().getId());
+        return "User progress updated successfully";
+    }
+
+    @Transactional
+    protected ProfileQuestionProgress saveQuestionProgress(Question question, ProfilePageProgress profilePageProgress) {
+        return profileQuestionProgressRepo.save(ProfileQuestionProgress
                 .builder()
                 .question(question)
                 .solvedAt(LocalDateTime.now())
                 .profilePageProgress(profilePageProgress)
                 .build());
+    }
+
+    @Transactional
+    protected void updateProfileInfo(Profile profile, ProfileQuestionProgress savedProfileQuestionProgress, Question question) {
         profile.setLastQuestionSolvedAt(savedProfileQuestionProgress.getSolvedAt());
         profile.setRank(profile.getRank() + question.getPoints());
         profile.setLevel(calcUserLevelBasedOnCurrentRank(profile.getRank()));
-        return "User progress updated successfully";
+    }
+
+
+    @Transactional
+    protected void updateProfilePageProgressInfo(ProfilePageProgress profilePageProgress) {
+        profilePageProgress.setNumberOfSolvedQuestions(profilePageProgress.getNumberOfSolvedQuestions() + 1);
+        profilePageProgress.setCompleted(profilePageProgress.getPage().getQuestions().size() == profilePageProgress.getNumberOfSolvedQuestions());
+    }
+
+    @Transactional
+    protected void checkMazeCompletion(Long id) {
+        ProfileMazeProgress profileMazeProgress = profileMazeProgressService.getProfileMazeProgressByMazeId(id);
+        int totalPages = profileMazeProgress.getMaze().getPages().size();
+        int solvedPages = 0;
+        for (ProfilePageProgress ppp : profileMazeProgress.getProfilePageProgresses()) {
+            if (ppp.isCompleted()) solvedPages += 1;
+        }
+        profileMazeProgress.setCompleted(totalPages == solvedPages);
     }
 
     private Level calcUserLevelBasedOnCurrentRank(int rank) {
@@ -86,14 +116,17 @@ public class ProgressServiceImpl implements ProgressService {
         return Level.SUPERIOR;
     }
 
-    private ProfilePageProgress createPageProgressIfNotExist(Profile profile, long pageId) {
+    @Transactional
+    protected ProfilePageProgress createPageProgressIfNotExist(Profile profile, long pageId) {
         ProfilePageProgress pageProgress = profilePageProgressService.getUserPageProgress(profile.getId(), pageId);
         if (pageProgress == null) {
             Page page = pageService._getSinglePage(pageId);
+            ProfileMazeProgress profileMazeProgress = profileMazeProgressService.getProfileMazeProgressByMazeId(page.getMaze().getId());
             ProfilePageProgress profilePageProgress = ProfilePageProgress
                     .builder()
                     .profile(profile)
                     .numberOfSolvedQuestions(0)
+                    .mazeProgress(profileMazeProgress)
                     .isCompleted(false)
                     .page(page)
                     .build();
@@ -123,6 +156,6 @@ public class ProgressServiceImpl implements ProgressService {
     @Override
     public ProfilePageProgressDTO getProfilePagesProgressInSinglePage(long pageId) {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
-        return fromProfilePageProgressToProfilePageProgressDTO(profilePageProgressService.getSingleProfilePagesProgressByProfileIdAndPageId(profile.getId(), pageId));
+        return fromProfilePageProgressToProfilePageProgressDTO(profilePageProgressService.getUserPageProgress(profile.getId(), pageId));
     }
 }
