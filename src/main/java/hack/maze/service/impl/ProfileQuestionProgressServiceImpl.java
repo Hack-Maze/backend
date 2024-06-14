@@ -40,7 +40,13 @@ public class ProfileQuestionProgressServiceImpl implements ProfileQuestionProgre
         }
 
         return profileScores.entrySet().stream()
-                .map(entry -> ProfileLeaderboardDTO.builder().mazeProfileDTO(fromProfileToMazeProfileDTO(entry.getKey())).score(entry.getValue()).build())
+                .map(entry -> ProfileLeaderboardDTO
+                        .builder()
+                        .profileId(entry.getKey().getId())
+                        .username(entry.getKey().getAppUser().getUsername())
+                        .image(entry.getKey().getImage())
+                        .score(entry.getValue())
+                        .build())
                 .sorted(Comparator.comparingInt(ProfileLeaderboardDTO::score).reversed())
                 .toList();
     }
