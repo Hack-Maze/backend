@@ -1,5 +1,6 @@
 package hack.maze.service;
 
+import hack.maze.dto.LeaderboardMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
@@ -18,4 +19,5 @@ public interface MazeService {
     String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) throws IOException;
     boolean isCurrentUserEnrolledInMaze(long mazeId);
     boolean isCurrentUserSolverInMaze(long mazeId);
+    List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId);
 }

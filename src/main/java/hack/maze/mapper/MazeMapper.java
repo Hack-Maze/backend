@@ -1,5 +1,6 @@
 package hack.maze.mapper;
 
+import hack.maze.dto.LeaderboardMazeDTO;
 import hack.maze.dto.MazeProgressDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
@@ -58,13 +59,26 @@ public class MazeMapper {
     }
 
 
-
     public static MazeProgressDTO fromMazeToMazeProgressDTO(Maze maze) {
         return MazeProgressDTO
                 .builder()
                 .id(maze.getId())
                 .title(maze.getTitle())
                 .image(maze.getImage())
+                .build();
+    }
+
+    public static List<LeaderboardMazeDTO> fromMazeToMazeToLeaderboardMazeDTO(List<Maze> mazes) {
+        return mazes.stream().map(MazeMapper::fromMazeToMazeToLeaderboardMazeDTO).collect(Collectors.toList());
+    }
+
+    public static LeaderboardMazeDTO fromMazeToMazeToLeaderboardMazeDTO(Maze maze) {
+        return LeaderboardMazeDTO
+                .builder()
+                .mazeId(maze.getId())
+                .title(maze.getTitle())
+                .image(maze.getImage())
+                .difficulty(maze.getDifficulty())
                 .build();
     }
 

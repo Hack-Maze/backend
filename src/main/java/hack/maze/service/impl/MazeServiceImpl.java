@@ -1,11 +1,13 @@
 package hack.maze.service.impl;
 
+import hack.maze.dto.LeaderboardMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Profile;
 import hack.maze.entity.Tag;
+import hack.maze.mapper.MazeMapper;
 import hack.maze.repository.MazeRepo;
 import hack.maze.service.*;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +24,7 @@ import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
 import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_MAZES;
-import static hack.maze.mapper.MazeMapper.fromMazeToMazeResponseDTO;
-import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
+import static hack.maze.mapper.MazeMapper.*;
 import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
 
@@ -161,7 +162,10 @@ public class MazeServiceImpl implements MazeService {
         return maze.getSolvers().contains(profile);
     }
 
-
+    @Override
+    public List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId) {
+        return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileId));
+    }
 
 
 }

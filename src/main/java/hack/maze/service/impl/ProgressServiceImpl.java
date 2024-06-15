@@ -1,5 +1,6 @@
 package hack.maze.service.impl;
 
+import hack.maze.dto.LeaderboardMazeDTO;
 import hack.maze.dto.ProfileLeaderboardDTO;
 import hack.maze.dto.ProfilePageProgressDTO;
 import hack.maze.entity.*;
@@ -119,12 +120,17 @@ public class ProgressServiceImpl implements ProgressService {
                             .image(profile.getImage())
                             .level(profile.getLevel())
                             .country(profile.getCountry())
-                            .solvedMazes(profile.getCompletedMazes())
+                            .solvedMazesNumber(profile.getCompletedMazes())
+                            .solvedMazes(getProfileSolvedMazes(profile.getId()))
                             .score(entry.getValue())
                             .build();
                 })
                 .sorted(Comparator.comparingInt(ProfileLeaderboardDTO::score).reversed())
                 .toList();
+    }
+
+    private List<LeaderboardMazeDTO> getProfileSolvedMazes(Long profileId) {
+        return mazeService.getSolvedMazesByProfileId(profileId);
     }
 
     private void checkAnswer(String correctAnswer, String userAnswer) {
