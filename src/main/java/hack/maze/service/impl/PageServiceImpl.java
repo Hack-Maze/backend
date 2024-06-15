@@ -1,11 +1,12 @@
 package hack.maze.service.impl;
 
-import hack.maze.config.UserContext;
 import hack.maze.dto.PageRequestDTO;
 import hack.maze.dto.PageResponseDTO;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Page;
+import hack.maze.entity.ProfileMazeProgress;
 import hack.maze.repository.PageRepo;
+import hack.maze.repository.ProfileMazeProgressRepo;
 import hack.maze.service.MazeService;
 import hack.maze.service.PageService;
 import hack.maze.service.UserService;
@@ -31,13 +32,26 @@ public class PageServiceImpl implements PageService {
     private final PageRepo pageRepo;
     private final MazeService mazeService;
     private final UserService userService;
+    private final ProfileMazeProgressRepo profileMazeProgressRepo;
 
     @Override
+    @Transactional
     public Long createPage(long mazeId, PageRequestDTO pageRequestDTO) {
         validatePageInfo(pageRequestDTO);
         Maze maze = mazeService._getSingleMaze(mazeId);
         Page savedPage = pageRepo.save(fillPageInfo(pageRequestDTO, maze));
+        updateProfileMazeProgressAsNotCompleted(savedPage.getMaze().getId());
         return savedPage.getId();
+    }
+
+    @Transactional
+    protected void updateProfileMazeProgressAsNotCompleted(Long mazeId) {
+        List<ProfileMazeProgress> pmps = profileMazeProgressRepo.findAllByMazeId(mazeId);
+        for (ProfileMazeProgress pmp : pmps) {
+            if (pmp.isCompleted()) {
+                pmp.setCompleted(false);
+            }
+        }
     }
 
     private Page fillPageInfo(PageRequestDTO pageRequestDTO, Maze maze) {

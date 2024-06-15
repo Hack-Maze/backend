@@ -46,7 +46,16 @@ public class MazeServiceImpl implements MazeService {
         Maze savedMaze = mazeRepo.save(fillMazeInfo(updateMazeDTO));
         savedMaze.setImage(azureService.sendImageToAzure(updateMazeDTO.image(), IMAGES_BLOB_CONTAINER_MAZES, savedMaze.getId()));
         mazeRepo.save(savedMaze);
+        updateProfileCreatedMazes(savedMaze);
         return savedMaze.getId();
+    }
+
+    @Transactional
+    protected void updateProfileCreatedMazes(Maze savedMaze) {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        List<Maze> createdMazes = profile.getCreatedMazes();
+        createdMazes.add(savedMaze);
+        profile.setCreatedMazes(createdMazes);
     }
 
     private void checkMazeExistence(String title) {

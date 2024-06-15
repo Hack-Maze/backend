@@ -6,7 +6,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +13,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Setter
@@ -22,7 +20,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProfileMazeProgress {
+public class QuestionProgress {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,14 +31,13 @@ public class ProfileMazeProgress {
     private Profile profile;
 
     @ManyToOne
-    @JoinColumn(name = "maze_id", referencedColumnName = "id")
-    private Maze maze;
+    @JoinColumn(name = "question_id", referencedColumnName = "id")
+    private Question question;
 
-    @OneToMany(mappedBy = "profileMazeProgress")
-    private List<ProfilePageProgress> profilePageProgresses;
+    @ManyToOne
+    @JoinColumn(name = "profile_page_progress_id", referencedColumnName = "id")
+    private ProfilePageProgress profilePageProgress;
 
-
-    private LocalDateTime enrolledAt;
-    private boolean isCompleted;
+    private LocalDateTime solvedAt;
 
 }

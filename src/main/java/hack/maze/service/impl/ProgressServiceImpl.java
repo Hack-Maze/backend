@@ -1,107 +1,165 @@
 package hack.maze.service.impl;
 
-import hack.maze.dto.ProfileMazeProgressDTO;
+import hack.maze.dto.ProfileLeaderboardDTO;
 import hack.maze.dto.ProfilePageProgressDTO;
 import hack.maze.entity.*;
-import hack.maze.repository.ProfileQuestionProgressRepo;
+import hack.maze.exceptions.ResourceAlreadyExistException;
+import hack.maze.mapper.ProgressMapper;
+import hack.maze.repository.ProfileMazeProgressRepo;
+import hack.maze.repository.ProfilePageProgressRepo;
+import hack.maze.repository.QuestionProgressRepo;
 import hack.maze.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static hack.maze.config.UserContext.getCurrentUser;
-import static hack.maze.mapper.ProfileMazeProgressMapper.fromProfileMazeProgressToProfileMazeProgressDTO;
-import static hack.maze.mapper.ProfilePageProgressMapper.fromProfilePageProgressToProfilePageProgressDTO;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ProgressServiceImpl implements ProgressService {
 
-    private final ProfileService profileService;
     private final MazeService mazeService;
     private final PageService pageService;
+    private final ProfileService profileService;
     private final QuestionService questionService;
-    private final ProfileMazeProgressService profileMazeProgressService;
-    private final ProfilePageProgressService profilePageProgressService;
-    private final ProfileQuestionProgressRepo profileQuestionProgressRepo;
+    private final QuestionProgressRepo questionProgressRepo;
+    private final ProfileMazeProgressRepo profileMazeProgressRepo;
+    private final ProfilePageProgressRepo profilePageProgressRepo;
+
 
     @Override
     @Transactional
-    public String enrollUserToMaze(long mazeId) {
+    public String enrollInMaze(long mazeId) {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
-        profileMazeProgressService.checkIfUserAlreadyEnrolledInThisMaze(profile.getId(), mazeId);
         Maze maze = mazeService._getSingleMaze(mazeId);
-        updateEnrolledUserInMaze(maze, profile);
-        ProfileMazeProgress profileMazeProgress = ProfileMazeProgress
-                .builder()
-                .maze(maze)
-                .profile(profile)
-                .isCompleted(false)
-                .build();
-        String ret = profileMazeProgressService.createNewProfileMazeProgress(profileMazeProgress);
-        return "User enrolled in maze with title = [" + maze.getTitle() + "] successfully | " + ret;
-    }
-
-    @Transactional
-    protected void updateEnrolledUserInMaze(Maze maze, Profile profile) {
-        List<Profile> enrolledUsers = maze.getEnrolledUsers();
-        enrolledUsers.add(profile);
-        maze.setEnrolledUsers(enrolledUsers);
+        checkIfUserAlreadyEnrolled(profile.getId(), maze.getId());
+        createProfileMazeProgress(profile, maze);
+        updateEnrolledUsers(profile, maze);
+        return "Profile enrolled Successfully";
     }
 
     @Override
     @Transactional
-    public String solveQuestion(long pageId, long solvedQuestionId, String answer) {
+    public String solveQuestion(long questionId, String answer) {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
-        ProfilePageProgress profilePageProgress = createPageProgressIfNotExist(profile, pageId);
-        Question question = questionService._getSingleQuestion(solvedQuestionId);
+        Question question = questionService._getSingleQuestion(questionId);
+        Page page = question.getPage();
+        ProfileMazeProgress pmp = profileMazeProgressRepo.findByProfileIdAndMazeId(profile.getId(), page.getMaze().getId()).orElseThrow(() -> new RuntimeException("User not enrolled to this maze yet"));
+        ProfilePageProgress ppp = findOrCreateProfilePageProgress(profile, page, pmp, false);
+        checkIfUserAlreadySolveThisQuestion(profile.getId(), question.getId());
         checkAnswer(question.getAnswer(), answer);
-        ProfileQuestionProgress savedProfileQuestionProgress = saveQuestionProgress(question, profilePageProgress);
-        updateProfileInfo(profile, savedProfileQuestionProgress, question);
-        updateProfilePageProgressInfo(profilePageProgress);
-        checkMazeCompletion(question.getPage().getMaze().getId());
-        return "User progress updated successfully";
+        QuestionProgress qp = createQuestionProgress(profile, question, ppp);
+        updateProfileInfo(profile, question.getPoints(), qp.getSolvedAt());
+        updatePageCompletionStatus(ppp, page);
+        updateMazeCompletion(profile, pmp, page.getMaze().getPages().size());
+        return "User progress updated Successfully";
     }
 
     @Transactional
-    protected ProfileQuestionProgress saveQuestionProgress(Question question, ProfilePageProgress profilePageProgress) {
-        return profileQuestionProgressRepo.save(ProfileQuestionProgress
-                .builder()
-                .question(question)
-                .solvedAt(LocalDateTime.now())
-                .profilePageProgress(profilePageProgress)
-                .build());
-    }
-
-    @Transactional
-    protected void updateProfileInfo(Profile profile, ProfileQuestionProgress savedProfileQuestionProgress, Question question) {
-        profile.setLastQuestionSolvedAt(savedProfileQuestionProgress.getSolvedAt());
-        profile.setRank(profile.getRank() + question.getPoints());
-        profile.setLevel(calcUserLevelBasedOnCurrentRank(profile.getRank()));
-    }
-
-
-    @Transactional
-    protected void updateProfilePageProgressInfo(ProfilePageProgress profilePageProgress) {
-        profilePageProgress.setNumberOfSolvedQuestions(profilePageProgress.getNumberOfSolvedQuestions() + 1);
-        profilePageProgress.setCompleted(profilePageProgress.getPage().getQuestions().size() == profilePageProgress.getNumberOfSolvedQuestions());
-    }
-
-    @Transactional
-    protected void checkMazeCompletion(Long id) {
-        ProfileMazeProgress profileMazeProgress = profileMazeProgressService.getProfileMazeProgressByMazeId(id);
-        int totalPages = profileMazeProgress.getMaze().getPages().size();
-        int solvedPages = 0;
-        for (ProfilePageProgress ppp : profileMazeProgress.getProfilePageProgresses()) {
-            if (ppp.isCompleted()) solvedPages += 1;
+    protected void updateMazeCompletion(Profile profile, ProfileMazeProgress pmp, int totalNumberOfPages) {
+        if (pmp.getProfilePageProgresses().size() == totalNumberOfPages) {
+            pmp.setCompleted(true);
+            Maze maze = pmp.getMaze();
+            List<Profile> solvers = maze.getSolvers();
+            solvers.add(profile);
+            maze.setSolvers(solvers);
+            profile.setCompletedMazes(profile.getCompletedMazes() + 1);
         }
-        profileMazeProgress.setCompleted(totalPages == solvedPages);
+    }
+
+    @Override
+    public ProfilePageProgressDTO getAllSolvedQuestionsInPage(Long pageId) {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        Optional<ProfilePageProgress> pageProgress = profilePageProgressRepo.findByProfileIdAndPageId(profile.getId(), pageId);
+        return pageProgress.map(ProgressMapper::fromProfilePageProgressToPageProgressDTO).orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public String markPageAsCompleted(Long pageId) {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        Page page = pageService._getSinglePage(pageId);
+        ProfileMazeProgress pmp = profileMazeProgressRepo.findByProfileIdAndMazeId(profile.getId(), page.getMaze().getId()).orElseThrow(() -> new RuntimeException("User not enrolled to this maze yet"));
+        if (page.getQuestions().isEmpty()) {
+            ProfilePageProgress ppp = findOrCreateProfilePageProgress(profile, page, pmp, true);
+            ppp.setCompleted(true);
+            ppp.setCompletedAt(LocalDateTime.now());
+            updateMazeCompletion(profile, pmp, page.getMaze().getPages().size());
+            return "Page with id = [" + pageId + "] marked as completed";
+        } else {
+            return "Can't mark this page as completed, you should solve the questions first";
+        }
+    }
+
+    @Override
+    @Cacheable("Leaderboard")
+    public List<ProfileLeaderboardDTO> getLeaderboard(LocalDate start, LocalDate end) {
+        List<QuestionProgress> questionProgresses = questionProgressRepo.findBySolvedAtBetween(start, end);
+        Map<Profile, Integer> profileScores = new HashMap<>();
+        for (QuestionProgress questionProgress : questionProgresses) {
+            Profile profile = questionProgress.getProfilePageProgress().getProfile();
+            int points = questionProgress.getQuestion().getPoints();
+            profileScores.put(profile, profileScores.getOrDefault(profile, 0) + points);
+        }
+        return profileScores.entrySet().stream()
+                .map(entry -> {
+                    Profile profile = entry.getKey();
+                    return ProfileLeaderboardDTO
+                            .builder()
+                            .profileId(profile.getId())
+                            .username(profile.getAppUser().getUsername())
+                            .image(profile.getImage())
+                            .level(profile.getLevel())
+                            .country(profile.getCountry())
+                            .solvedMazes(profile.getCompletedMazes())
+                            .score(entry.getValue())
+                            .build();
+                })
+                .sorted(Comparator.comparingInt(ProfileLeaderboardDTO::score).reversed())
+                .toList();
+    }
+
+    private void checkAnswer(String correctAnswer, String userAnswer) {
+        if (!Objects.equals(correctAnswer.toLowerCase(), userAnswer.toLowerCase())) {
+            throw new RuntimeException("Wrong answer");
+        }
+    }
+
+    @Transactional
+    protected void updatePageCompletionStatus(ProfilePageProgress ppp, Page page) {
+        int solvedQuestions = ppp.getQuestionProgresses() != null ? ppp.getQuestionProgresses().size() : 0;
+        int totalQuestions = page.getQuestions().size();
+        if (solvedQuestions == totalQuestions) {
+            ppp.setCompleted(true);
+            ppp.setCompletedAt(LocalDateTime.now());
+        }
+    }
+
+    private ProfilePageProgress findOrCreateProfilePageProgress(Profile profile, Page page, ProfileMazeProgress pmp, boolean isCompleted) {
+        return profilePageProgressRepo.findByProfileIdAndPageId(profile.getId(), page.getId()).orElseGet(() -> profilePageProgressRepo
+                .save(ProfilePageProgress
+                        .builder()
+                        .profile(profile)
+                        .page(page)
+                        .isCompleted(isCompleted)
+                        .questionProgresses(new ArrayList<>())
+                        .profileMazeProgress(pmp)
+                        .build()));
+    }
+
+    @Transactional
+    protected void updateProfileInfo(Profile profile, int points, LocalDateTime solvedAt) {
+        profile.setRank(profile.getRank() + points);
+        profile.setLastQuestionSolvedAt(solvedAt);
+        profile.setLevel(calcUserLevelBasedOnCurrentRank(profile.getRank()));
     }
 
     private Level calcUserLevelBasedOnCurrentRank(int rank) {
@@ -116,74 +174,46 @@ public class ProgressServiceImpl implements ProgressService {
         return Level.SUPERIOR;
     }
 
-    private ProfilePageProgress createPageProgressIfNotExist(Profile profile, long pageId) {
-        ProfilePageProgress pageProgress = profilePageProgressService.getUserPageProgress(profile.getId(), pageId);
-        if (pageProgress == null) {
-            Page page = pageService._getSinglePage(pageId);
-            ProfileMazeProgress profileMazeProgress = profileMazeProgressService.getProfileMazeProgressByMazeId(page.getMaze().getId());
-            ProfilePageProgress profilePageProgress = ProfilePageProgress
-                    .builder()
-                    .profile(profile)
-                    .numberOfSolvedQuestions(0)
-                    .mazeProgress(profileMazeProgress)
-                    .isCompleted(false)
-                    .page(page)
-                    .build();
-            return profilePageProgressService._createNewProfilePageProgress(profilePageProgress);
-        }
-        return pageProgress;
+
+    private QuestionProgress createQuestionProgress(Profile profile, Question question, ProfilePageProgress ppp) {
+        QuestionProgress qp = questionProgressRepo.save(QuestionProgress
+                .builder()
+                .question(question)
+                .profile(profile)
+                .solvedAt(LocalDateTime.now())
+                .profilePageProgress(ppp)
+                .build());
+        List<QuestionProgress> qps = ppp.getQuestionProgresses();
+        qps.add(qp);
+        ppp.setQuestionProgresses(qps);
+        return qp;
     }
 
-    private ProfilePageProgress createPageProgressIfNotExist(Profile profile, Page page) {
-        ProfilePageProgress pageProgress = profilePageProgressService.getUserPageProgress(profile.getId(), page.getId());
-        if (pageProgress == null) {
-            ProfileMazeProgress profileMazeProgress = profileMazeProgressService.getProfileMazeProgressByMazeId(page.getMaze().getId());
-            ProfilePageProgress profilePageProgress = ProfilePageProgress
-                    .builder()
-                    .profile(profile)
-                    .numberOfSolvedQuestions(0)
-                    .mazeProgress(profileMazeProgress)
-                    .isCompleted(false)
-                    .page(page)
-                    .build();
-            return profilePageProgressService._createNewProfilePageProgress(profilePageProgress);
-        }
-        return pageProgress;
-    }
-
-    private void checkAnswer(String theActualAnswer, String userAnswer) {
-        if (!Objects.equals(theActualAnswer.toLowerCase(), userAnswer.toLowerCase())) {
-            throw new RuntimeException("Wrong answer");
+    private void checkIfUserAlreadySolveThisQuestion(Long profileId, Long questionId) {
+        if (questionProgressRepo.findByProfileIdAndQuestionId(profileId, questionId).isPresent()) {
+            throw new ResourceAlreadyExistException("Profile already solved this question");
         }
     }
 
-    @Override
-    public List<ProfileMazeProgressDTO> getProfileMazesProgress() {
-        Profile profile = profileService._getSingleProfile(getCurrentUser());
-        return fromProfileMazeProgressToProfileMazeProgressDTO(profileMazeProgressService.getProfileMazesProgressByProfileId(profile.getId()));
+    @Transactional
+    protected void updateEnrolledUsers(Profile profile, Maze maze) {
+        List<Profile> enrolledUsers = maze.getEnrolledUsers();
+        enrolledUsers.add(profile);
+        maze.setEnrolledUsers(enrolledUsers);
     }
 
-    @Override
-    public List<ProfilePageProgressDTO> getProfilePagesProgress() {
-        Profile profile = profileService._getSingleProfile(getCurrentUser());
-        return fromProfilePageProgressToProfilePageProgressDTO(profilePageProgressService.getProfilePagesProgressByProfileId(profile.getId()));
-    }
-
-    @Override
-    public ProfilePageProgressDTO getProfilePagesProgressInSinglePage(long pageId) {
-        Profile profile = profileService._getSingleProfile(getCurrentUser());
-        return fromProfilePageProgressToProfilePageProgressDTO(profilePageProgressService.getUserPageProgress(profile.getId(), pageId));
-    }
-
-    @Override
-    public String markPageAsCompleted(long pageId) {
-        Profile profile = profileService._getSingleProfile(getCurrentUser());
-        Page page = pageService._getSinglePage(pageId);
-        if (page.getQuestions().isEmpty()) {
-            createPageProgressIfNotExist(profile, page);
-            return "Page with id = [" + pageId + "] mark as completed";
-        } else {
-            return "Can't mark this page as completed, you should solve the questions first";
+    private void checkIfUserAlreadyEnrolled(Long profileId, Long mazeId) {
+        if (profileMazeProgressRepo.findByProfileIdAndMazeId(profileId, mazeId).isPresent()) {
+            throw new ResourceAlreadyExistException("Profile already enrolled");
         }
+    }
+
+    private void createProfileMazeProgress(Profile profile, Maze maze) {
+        profileMazeProgressRepo.save(ProfileMazeProgress
+                .builder()
+                .profile(profile)
+                .maze(maze)
+                .enrolledAt(LocalDateTime.now())
+                .build());
     }
 }

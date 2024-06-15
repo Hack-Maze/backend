@@ -36,10 +36,6 @@ public class Page {
     @JsonManagedReference
     private List<Question> questions;
 
-    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "page")
-    @JsonIgnore
-    private List<ProfilePageProgress> profilePageProgresses;
-
     @ManyToOne
     @JsonBackReference
     private Maze maze;

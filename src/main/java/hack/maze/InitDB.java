@@ -26,7 +26,7 @@ public class InitDB {
     private final TagRepo tagRepo;
     private final ProfileMazeProgressRepo profileMazeProgressRepo;
     private final ProfilePageProgressRepo profilePageProgressRepo;
-    private final ProfileQuestionProgressRepo profileQuestionProgressRepo;
+//    private final ProfileQuestionProgressRepo profileQuestionProgressRepo;
 
     @Value("${pass-from-env}")
     private String passFromEnv;
@@ -107,56 +107,56 @@ public class InitDB {
                 .build());
 
         // create user progress
-        profileMazeProgressRepo.save(ProfileMazeProgress
-                .builder()
-                .profile(savedProfile)
-                .isCompleted(false)
-                .maze(savedMaze)
-                .build());
-        ProfilePageProgress savedProfilePageProgress = profilePageProgressRepo.save(ProfilePageProgress
-                .builder()
-                .page(savedPage)
-                .profile(savedProfile)
-                .isCompleted(false)
-                .build());
-        profileQuestionProgressRepo.save(ProfileQuestionProgress
-                .builder()
-                .question(savedQuestion)
-                .profilePageProgress(savedProfilePageProgress)
-                .build());
+//        profileMazeProgressRepo.save(ProfileMazeProgress
+//                .builder()
+//                .profile(savedProfile)
+//                .isCompleted(false)
+//                .maze(savedMaze)
+//                .build());
+//        ProfilePageProgress savedProfilePageProgress = profilePageProgressRepo.save(ProfilePageProgress
+//                .builder()
+//                .page(savedPage)
+//                .profile(savedProfile)
+//                .isCompleted(false)
+//                .build());
+//        profileQuestionProgressRepo.save(ProfileQuestionProgress
+//                .builder()
+//                .question(savedQuestion)
+//                .profilePageProgress(savedProfilePageProgress)
+//                .build());
     }
 
     @Bean
     CommandLineRunner commandLineRunner() {
         return args -> {
 
-//            if (mazeRepo.count() == 0) {
-//                init();
-//            }
-//            if (userRepo.count() == 0) {
-//                AppUser savedUser = userRepo.save(AppUser
-//                        .builder()
-//                        .email("admin@admin.admin")
-//                        .username("admin")
-//                        .password("$2a$12$ugoECT/fnHBIRgczCJbe2eOKRDgKFrjTOKuG3EViEX3dk8HGo1r9C")
-//                        .role(Role.ADMIN)
-//                        .createdAt(LocalDateTime.now())
-//                        .build());
-//                profileRepo.save(Profile.builder().appUser(savedUser).build());
-//            }
-//
-//            if (userRepo.findByUsername("admin").isEmpty()) {
-//                AppUser admin = userRepo.save(AppUser
-//                        .builder()
-//                        .email("admin@admin.admin")
-//                        .username("HackMaze")
-//                        .password(passwordEncoder.encode(passFromEnv))
-//                        .role(Role.ADMIN)
-//                        .createdAt(LocalDateTime.now())
-//                        .build());
-//                profileRepo.save(Profile.builder().appUser(admin).build());
+            if (mazeRepo.count() == 0) {
+                init();
+            }
+            if (userRepo.count() == 0) {
+                AppUser savedUser = userRepo.save(AppUser
+                        .builder()
+                        .email("admin@admin.admin")
+                        .username("admin")
+                        .password("$2a$12$ugoECT/fnHBIRgczCJbe2eOKRDgKFrjTOKuG3EViEX3dk8HGo1r9C")
+                        .role(Role.ADMIN)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+                profileRepo.save(Profile.builder().appUser(savedUser).build());
+            }
 
-//            }
+            if (userRepo.findByUsername("HackMaze").isEmpty()) {
+                AppUser admin = userRepo.save(AppUser
+                        .builder()
+                        .email("admin@admin.admin")
+                        .username("HackMaze")
+                        .password(passwordEncoder.encode(passFromEnv))
+                        .role(Role.ADMIN)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+                profileRepo.save(Profile.builder().appUser(admin).build());
+
+            }
 
 
 

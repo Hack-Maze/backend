@@ -1,21 +1,13 @@
 package hack.maze.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -25,13 +17,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProfilePageProgress {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "profile_id", referencedColumnName = "id")
-    @JsonBackReference
     private Profile profile;
 
     @ManyToOne
@@ -39,13 +31,13 @@ public class ProfilePageProgress {
     private Page page;
 
     @ManyToOne
-    private ProfileMazeProgress mazeProgress;
+    @JoinColumn(name = "profile_maze_progress_id", referencedColumnName = "id")
+    private ProfileMazeProgress profileMazeProgress;
 
-    @OneToMany(mappedBy = "profilePageProgress", cascade = CascadeType.REMOVE)
-    @JsonManagedReference
-    private List<ProfileQuestionProgress> profileQuestionProgresses;
-
-    private long numberOfSolvedQuestions;
+    @OneToMany(mappedBy = "profilePageProgress")
+    private List<QuestionProgress> questionProgresses;
 
     private boolean isCompleted;
+    private LocalDateTime completedAt;
+
 }

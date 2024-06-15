@@ -32,7 +32,6 @@ public class PageMapper {
                 .builder()
                 .id(page.getId())
                 .title(page.getTitle())
-                .description(page.getDescription())
                 .build();
     }
 

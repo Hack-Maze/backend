@@ -16,43 +16,26 @@ public class ProgressController {
     @PostMapping("/enroll-user-to-maze/{mazeId}")
     public ResponseEntity<?> enrollUserToMaze(@PathVariable long mazeId) {
         try {
-            return ResponseEntity.ok(progressService.enrollUserToMaze(mazeId));
+            return ResponseEntity.ok(progressService.enrollInMaze(mazeId));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
-    @PostMapping("/solve-question/{pageId}/{solvedQuestionId}")
-    public ResponseEntity<?> solveQuestion(@PathVariable long pageId, @PathVariable long solvedQuestionId, @RequestParam("answer") String answer) {
+    @PostMapping("/solve-question/{questionId}")
+    public ResponseEntity<?> solveQuestion(@PathVariable long questionId, @RequestParam("answer") String answer) {
         try {
-            return ResponseEntity.ok(progressService.solveQuestion(pageId, solvedQuestionId, answer));
+            return ResponseEntity.ok(progressService.solveQuestion(questionId, answer));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
-    @GetMapping("/get-profile-maze-progress")
-    public ResponseEntity<?> getProfileMazesProgress() {
-        try {
-            return ResponseEntity.ok(progressService.getProfileMazesProgress());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
-    @GetMapping("/get-profile-page-progress")
-    public ResponseEntity<?> getProfilePagesProgress() {
-        try {
-            return ResponseEntity.ok(progressService.getProfilePagesProgress());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
 
     @GetMapping("/get-profile-page-progress/{pageId}")
     public ResponseEntity<?> getProfilePagesProgress(@PathVariable long pageId) {
         try {
-            return ResponseEntity.ok(progressService.getProfilePagesProgressInSinglePage(pageId));
+            return ResponseEntity.ok(progressService.getAllSolvedQuestionsInPage(pageId));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

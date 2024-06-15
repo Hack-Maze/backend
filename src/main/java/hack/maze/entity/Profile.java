@@ -49,27 +49,15 @@ public class Profile {
     private String personalWebsite;
     private String job;
     private LocalDateTime lastQuestionSolvedAt;
-
-    @OneToMany(mappedBy = "profile")
-    @JsonManagedReference
-    private List<ProfileMazeProgress> profileMazeProgresses;
-
-    @OneToMany(mappedBy = "profile")
-    @JsonManagedReference
-    private List<ProfilePageProgress> profilePageProgresses;
+    private int completedMazes;
 
     @OneToMany(mappedBy = "author")
     @JsonIgnore // TODO: remove json ignore and replace it with dto
     private List<Maze> createdMazes;
 
-    @ManyToOne
-    @JoinColumn(name = "last_activate_maze_id", referencedColumnName = "id")
-    private Maze lastActiveMaze;
-
     @ManyToMany(mappedBy = "enrolledUsers")
     @JsonBackReference
     private List<Maze> enrolledMazes;
-
 
     @ManyToMany
     @JoinTable(

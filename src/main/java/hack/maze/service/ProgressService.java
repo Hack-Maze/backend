@@ -1,16 +1,16 @@
 package hack.maze.service;
 
-import hack.maze.dto.ProfileMazeProgressDTO;
+import hack.maze.dto.ProfileLeaderboardDTO;
 import hack.maze.dto.ProfilePageProgressDTO;
-import hack.maze.entity.ProfileQuestionProgress;
+import hack.maze.entity.ProfileMazeProgress;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ProgressService {
-    String enrollUserToMaze(long mazeId);
-    String solveQuestion(long pageId, long solvedQuestionId, String answer);
-    List<ProfileMazeProgressDTO> getProfileMazesProgress();
-    List<ProfilePageProgressDTO> getProfilePagesProgress();
-    ProfilePageProgressDTO getProfilePagesProgressInSinglePage(long pageId);
-    String markPageAsCompleted(long pageId);
+    String enrollInMaze(long mazeId);
+    String solveQuestion(long questionId, String answer);
+    ProfilePageProgressDTO getAllSolvedQuestionsInPage(Long pageId);
+    String markPageAsCompleted(Long pageId);
+    List<ProfileLeaderboardDTO> getLeaderboard(LocalDate start, LocalDate end);
 }

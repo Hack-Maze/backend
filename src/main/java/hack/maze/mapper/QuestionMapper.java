@@ -1,7 +1,9 @@
 package hack.maze.mapper;
 
+import hack.maze.dto.QuestionProgressDTO;
 import hack.maze.dto.QuestionResponseDTO;
 import hack.maze.entity.Question;
+import hack.maze.entity.QuestionProgress;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,4 +23,16 @@ public class QuestionMapper {
                 .points(question.getPoints())
                 .build();
     }
+
+    public static List<QuestionProgressDTO> fromQuestionToQuestionProgressDTO(List<QuestionProgress> questionProgresses) {
+        return questionProgresses.stream().map(QuestionMapper::fromQuestionToQuestionProgressDTO).collect(Collectors.toList());
+    }
+    public static QuestionProgressDTO fromQuestionToQuestionProgressDTO(QuestionProgress questionProgress) {
+        return QuestionProgressDTO
+                .builder()
+                .id(questionProgress.getQuestion().getId())
+                .solvedAt(questionProgress.getSolvedAt())
+                .build();
+    }
+
 }
