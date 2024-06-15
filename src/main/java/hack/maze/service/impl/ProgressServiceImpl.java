@@ -9,7 +9,11 @@ import hack.maze.mapper.ProgressMapper;
 import hack.maze.repository.ProfileMazeProgressRepo;
 import hack.maze.repository.ProfilePageProgressRepo;
 import hack.maze.repository.QuestionProgressRepo;
-import hack.maze.service.*;
+import hack.maze.service.MazeService;
+import hack.maze.service.PageService;
+import hack.maze.service.ProfileService;
+import hack.maze.service.ProgressService;
+import hack.maze.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,7 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import static hack.maze.config.UserContext.getCurrentUser;
 

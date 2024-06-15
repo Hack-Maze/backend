@@ -1,6 +1,5 @@
 package hack.maze.service.impl;
 
-import hack.maze.constant.ApplicationConstant;
 import hack.maze.dto.QuestionDTO;
 import hack.maze.dto.QuestionResponseDTO;
 import hack.maze.entity.Difficulty;
@@ -20,7 +19,10 @@ import java.nio.file.AccessDeniedException;
 import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
-import static hack.maze.constant.ApplicationConstant.*;
+import static hack.maze.constant.ApplicationConstant.EASY_POINTS;
+import static hack.maze.constant.ApplicationConstant.FUNDAMENTAL_POINTS;
+import static hack.maze.constant.ApplicationConstant.HARD_POINTS;
+import static hack.maze.constant.ApplicationConstant.MEDIUM_POINTS;
 import static hack.maze.mapper.QuestionMapper.fromQuestionToQuestionResponseDTO;
 import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;

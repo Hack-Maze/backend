@@ -7,9 +7,12 @@ import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Profile;
 import hack.maze.entity.Tag;
-import hack.maze.mapper.MazeMapper;
 import hack.maze.repository.MazeRepo;
-import hack.maze.service.*;
+import hack.maze.service.AzureService;
+import hack.maze.service.MazeService;
+import hack.maze.service.ProfileService;
+import hack.maze.service.TagService;
+import hack.maze.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +27,9 @@ import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
 import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_MAZES;
-import static hack.maze.mapper.MazeMapper.*;
+import static hack.maze.mapper.MazeMapper.fromMazeToMazeResponseDTO;
+import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
+import static hack.maze.mapper.MazeMapper.fromMazeToMazeToLeaderboardMazeDTO;
 import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
 

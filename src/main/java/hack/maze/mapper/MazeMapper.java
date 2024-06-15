@@ -58,16 +58,6 @@ public class MazeMapper {
                 .build();
     }
 
-
-    public static MazeProgressDTO fromMazeToMazeProgressDTO(Maze maze) {
-        return MazeProgressDTO
-                .builder()
-                .id(maze.getId())
-                .title(maze.getTitle())
-                .image(maze.getImage())
-                .build();
-    }
-
     public static List<LeaderboardMazeDTO> fromMazeToMazeToLeaderboardMazeDTO(List<Maze> mazes) {
         return mazes.stream().map(MazeMapper::fromMazeToMazeToLeaderboardMazeDTO).collect(Collectors.toList());
     }
