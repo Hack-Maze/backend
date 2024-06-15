@@ -50,4 +50,13 @@ public class ProgressController {
         }
     }
 
+    @GetMapping("/not-completed-mazes")
+    public ResponseEntity<?> markPageAsComplete() {
+        try {
+            return ResponseEntity.ok(progressService.notCompletedMazes());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 }

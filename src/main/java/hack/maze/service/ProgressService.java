@@ -1,5 +1,7 @@
 package hack.maze.service;
 
+import hack.maze.dto.LeaderboardMazeDTO;
+import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.ProfileLeaderboardDTO;
 import hack.maze.dto.ProfilePageProgressDTO;
 import hack.maze.entity.ProfileMazeProgress;
@@ -13,4 +15,5 @@ public interface ProgressService {
     ProfilePageProgressDTO getAllSolvedQuestionsInPage(Long pageId);
     String markPageAsCompleted(Long pageId);
     List<ProfileLeaderboardDTO> getLeaderboard(LocalDate start, LocalDate end);
+    List<LeaderboardMazeDTO> notCompletedMazes();
 }

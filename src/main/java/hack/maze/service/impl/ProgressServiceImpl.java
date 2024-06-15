@@ -5,6 +5,7 @@ import hack.maze.dto.ProfileLeaderboardDTO;
 import hack.maze.dto.ProfilePageProgressDTO;
 import hack.maze.entity.*;
 import hack.maze.exceptions.ResourceAlreadyExistException;
+import hack.maze.mapper.MazeMapper;
 import hack.maze.mapper.ProgressMapper;
 import hack.maze.repository.ProfileMazeProgressRepo;
 import hack.maze.repository.ProfilePageProgressRepo;
@@ -137,6 +138,12 @@ public class ProgressServiceImpl implements ProgressService {
                 })
                 .sorted(Comparator.comparingInt(ProfileLeaderboardDTO::score).reversed())
                 .toList();
+    }
+
+    @Override
+    public List<LeaderboardMazeDTO> notCompletedMazes() {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        return MazeMapper.fromMazeToMazeToLeaderboardMazeDTO(profileMazeProgressRepo.notCompletedMazes(profile.getId()));
     }
 
     private List<LeaderboardMazeDTO> getProfileSolvedMazes(Long profileId) {
