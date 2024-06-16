@@ -1,31 +1,26 @@
-name: Java-CI
+name: Java-CI 
 
-on:
+on: 
   workflow_dispatch:
 
-  push:
+  push: 
     branches:
-      - 'main'
-      - 'develop'
-      - 'feature-**'
+      - '*'
       - '!CI-**'
-      - 'deploy'
-
-    paths-ignore:
-      - '*.md'
-      - 'docker-compose.yml'
-      - '.github/workflows/*'
+      
+    paths-ignore:    
+        - '*.md'
+        - 'docker-compose.yml'
+        - '.github/workflows/*'
   pull_request:
     branches:
-      - 'main'
-      - 'develop'
-      - 'feature-**'
+      - '*'
       - '!CI-**'
-      - 'deploy'
-    paths-ignore:
-      - '*.md'
-      - 'docker-compose.yml'
-      - '.github/workflows/*'
+      
+    paths-ignore:    
+        - '*.md'
+        - 'docker-compose.yml'
+        - '.github/workflows/*'
 
 permissions:
   contents: read
@@ -45,374 +40,385 @@ jobs:
         with:
           severity: info
           color: '#7851A9'
-          details: "## > - **Backtend CI Workflow started!**"
+          details: "## > - **Backend CI Workflow started!**"
           footer: HORRAI.
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
-  #############################################################################
+#############################################################################
 
-  #############################################################################
+#############################################################################
 
   build-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest 
     needs: [notify_Discord]
     defaults:
       run:
         shell: bash
     strategy:
-      matrix:
-        java-version: [17]
+          matrix:
+            java-version: [17]
 
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: ${{ matrix.java-version }}
-          distribution: 'temurin'
-      - name: install maven
-        run: mvn clean package -DskipTests
+    - uses: actions/checkout@v3
+    - name: Set up JDK 
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+    - name: install maven
+      run: mvn clean package -DskipTests
 
-      - name: notify Backend  Build-test Stage Succeeded
-        uses: rjstone/discord-webhook-notify@v1
-        env:
-          SHA: ${{ env.SHA }}
-
-
-        if: success()
-        with:
-          severity: info
-          details: "## > - **Build-test stage Succeeded**"
-          footer: sha ${{ env.SHA }}
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-
-
-
-      - name: Test Failure
-        uses: rjstone/discord-webhook-notify@v1
-        env:
-          SHA: ${{ env.SHA }}
-
-        if: failure()
-        with:
-          severity: error
-          details: "## > - **Build-test stage Failed**"
-          footer: sha ${{ env.SHA }}
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-
-      - name: Test Cancelled
-        uses: rjstone/discord-webhook-notify@v1
-        if: cancelled()
-        with:
-          severity: warn
-          details: "## > - **Build-test stage Cancelled!**"
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    - name: notify Backend  Build-test Stage Succeeded
+      uses: rjstone/discord-webhook-notify@v1
+      env:
+        SHA: ${{ env.SHA }}
+        
+      
+      if: success()
+      with:
+        severity: info
+        details: "## > - **Build-test stage Succeeded**"
+        footer: sha ${{ env.SHA }}
+        webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
 
+          
+    - name: Test Failure
+      uses: rjstone/discord-webhook-notify@v1
+      env:
+        SHA: ${{ env.SHA }}
+  
+      if: failure()
+      with:
+        severity: error
+        details: "## > - **Build-test stage Failed**"
+        footer: sha ${{ env.SHA }}
+        webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
-  #############################################################################
-  #############################################################################
-
-
-  lint:
-    defaults:
-      run:
-        shell: bash
-        working-directory: ${{ github.workspace }}
-
-    needs: [build-test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: short-sha
-        uses: benjlevesque/short-sha@v2.2
-        env:
-          SHA: ${{ steps.short-sha.outputs.sha }}
-
-
-      - uses: actions/checkout@v4
-        name: 'Checkout repository'
-
-
-      ##############################
-      # Run Linter against code base #
-      ################################
-
-      - name: Lint Code Base
-        uses: super-linter/super-linter/slim@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DISABLE_ERRORS: true
-
-      - name: notify Backend  lint Stage Succeeded
-        uses: rjstone/discord-webhook-notify@v1
-        if: success()
-        with:
-          severity: info
-          details: "## > - **Lint stage Succeeded** "
-          footer: sha ${{ env.SHA }}
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        env:
-          SHA: ${{ env.SHA }}
-
-      - name: Test Failure
-        uses: rjstone/discord-webhook-notify@v1
-        if: failure()
-        with:
-          severity: error
-          details: "## > - **Lint stage Failed**"
-          footer: sha ${{ env.SHA }}
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        env:
-          SHA: ${{ env.SHA }}
-
-      - name: Test Cancelled
-        uses: rjstone/discord-webhook-notify@v1
-        if: cancelled()
-        with:
-          severity: warn
-          details: "## > - **Lint Cancelled!**"
-          footer: sha ${{ env.SHA }}
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        env:
-          SHA: ${{ env.SHA }}
-
-            ############################################################################
-
-            ############################################################################
-
-            #   analyze-codeQL:
-            #     name: Analyze code
-            #     runs-on: ubuntu-latest
-            #     defaults:
-            #       run:
-            #         shell: bash
-            #         working-directory: ${{ github.workspace }}
-
-            #     needs: [build-test]
-            #     permissions:
-            #       actions: read
-            #       contents: read
-            #       security-events: write
-
-
-            #     strategy:
-            #       fail-fast: false
-            #       matrix:
-            #         language: [ 'java' ]
-            #         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
-
-            #     steps:
-
-            #     - name: short-sha
-            #       uses: benjlevesque/short-sha@v2.2
-            #       env:
-            #         SHA: ${{ steps.short-sha.outputs.sha }}
-
-
-            #     - name: Checkout repository
-            #       uses: actions/checkout@v4
-
-            #     # Initializes the CodeQL tools for scanning.
-            #     - name: Initialize CodeQL
-            #       uses: github/codeql-action/init@v2
-            #       with:
-            #         languages: ${{ matrix.language }}
-            #         # If you wish to specify custom queries, you can do so here or in a config file.
-            #         # By default, queries listed here will override any specified in a config file.
-            #         # Prefix the list here with "+" to use these queries and those in the config file.
-            #         # queries: ./path/to/local/query, your-org/your-repo/queries@main
-
-            #     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-            #     # If this step fails, then you should remove it and run the build manually (see below)
-            #     - name: Autobuild
-            #       uses: github/codeql-action/autobuild@v2
-
-
-            #     # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
-            #     #    and modify them (or add more) to build your code if your project
-            #     #    uses a compiled language
-
-            #     #- run: |
-            #     #   make bootstrap
-            #     #   make release
-
-            #     - name: Perform CodeQL Analysis
-            #       uses: github/codeql-action/analyze@v3
+    - name: Test Cancelled
+      uses: rjstone/discord-webhook-notify@v1
+      if: cancelled()
+      with:
+        severity: warn
+        details: "## > - **Build-test stage Cancelled!**"
+        webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
 
 
-            #     - name: notify analyze-codeQL Stage Succeeded
-            #       uses: rjstone/discord-webhook-notify@v1
-            #       if: success()
-            #       with:
-            #         severity: info
-            #         details: "##  > - **Analyze-codeQL stage Succeeded**"
-            #         footer: sha ${{ env.SHA }}
-            #         webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-            #       env:
-            #         SHA: ${{ env.SHA }}
-            #     - name: Test Failure
-            #       uses: rjstone/discord-webhook-notify@v1
-            #       if: failure()
-            #       with:
-            #         severity: error
-            #         details: "##  > - **Analyze-codeQL stage Failed**"
-            #         footer: sha ${{ env.SHA }}
-            #         webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-            #       env:
-            #         SHA: ${{ env.SHA }}
-            #     - name: Test Cancelled
-            #       uses: rjstone/discord-webhook-notify@v1
-            #       if: cancelled()
-            #       with:
-            #         severity: warn
-            #         details: "##  > - **Analyze-codeQL Cancelled!**"
-            #         footer: sha ${{ env.SHA }}
-            #         webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-            #       env:
-            #           SHA: ${{ env.SHA }}
-
-            # #############################################################################
-
-            # #############################################################################
-            #   analyze-codacy:
-            #       needs: [build-test]
-            #       defaults:
-            #         run:
-            #           shell: bash
-            #           working-directory: ${{ github.workspace }}
-
-            #       permissions:
-            #         contents: read # for actions/checkout to fetch code
-            #         security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
-            #         actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
-            #       name: Codacy Security Scan
-            #       runs-on: ubuntu-latest
-            #       steps:
-
-            #         - name: short-sha
-            #           uses: benjlevesque/short-sha@v2.2
-            #           env:
-            #             SHA: ${{ steps.short-sha.outputs.sha }}
-
-            #         # Checkout the repository to the GitHub Actions runner
-            #         - name: Checkout code
-            #           uses: actions/checkout@v3
-
-            #         # Execute Codacy Analysis CLI and generate a SARIF output with the security issues identified during the analysis
-            #         - name: Run Codacy Analysis CLI
-            #           uses: codacy/codacy-analysis-cli-action@d840f886c4bd4edc059706d09c6a1586111c540b
-            #           with:
-            #             # Check https://github.com/codacy/codacy-analysis-cli#project-token to get your project token from your Codacy repository
-            #             # You can also omit the token and run the tools that support default configurations
-            #             project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-            #             verbose: true
-            #             output: results.sarif
-            #             format: sarif
-            #             # Adjust severity of non-security issues
-            #             gh-code-scanning-compat: true
-            #             # Force 0 exit code to allow SARIF file generation
-            #             # This will handover control about PR rejection to the GitHub side
-            #             max-allowed-issues: 2147483647
-
-            #         # Upload the SARIF file generated in the previous step
-            #         - name: Upload SARIF results file
-            #           uses: github/codeql-action/upload-sarif@v2
-            #           with:
-            #             sarif_file: results.sarif
-
-            #         - name: notify analyze-codacy Stage Succeeded
-            #           uses: rjstone/discord-webhook-notify@v1
-            #           if: success()
-            #           with:
-            #             severity: info
-            #             details: "##  > - **Analyze-codacy stage Succeeded**"
-            #             footer: sha ${{ env.SHA }}
-            #             webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-            #           env:
-            #             SHA: ${{ env.SHA }}
-            #         - name: Test Failure
-            #           uses: rjstone/discord-webhook-notify@v1
-            #           if: failure()
-            #           with:
-            #             severity: error
-            #             details: "##  > - **Analyze-codacy stage Failed**"
-            #             footer: sha ${{ env.SHA }}
-            #             webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-            #           env:
-            #             SHA: ${{ env.SHA }}
-            #         - name: Test Cancelled
-            #           uses: rjstone/discord-webhook-notify@v1
-            #           if: cancelled()
-            #           with:
-            #             severity: warn
-            #             details: "##  > - **Analyze-codacy Cancelled!**"
-            #             footer: sha ${{ env.SHA }}
-            #             webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-            #           env:
-            #               SHA: ${{ env.SHA }}
-
-  #############################################################################
-
-  #############################################################################
+#############################################################################
+#############################################################################
 
 
-  #   Trivy-scan:
-  #     if: github.actor!= 'dependabot[bot]'
-  #     needs: [build-test]
-  #     defaults:
-  #       run:
-  #         shell: bash
-  #         working-directory: ${{ github.workspace }}/
-  #     permissions:
-  #       contents: read # for actions/checkout to fetch code
-  #       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
-  #       actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
-  #     name: Trivy analysis
-  #     runs-on: "ubuntu-22.04"
-  #     steps:
-  #       - name: Checkout code
-  #         uses: actions/checkout@v3
+#  lint:
+#    defaults:
+#      run:
+#        shell: bash
+#        working-directory: ${{ github.workspace }}
+#
+#    needs: [build-test]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: short-sha
+#        uses: benjlevesque/short-sha@v2.2
+#        env:
+#          SHA: ${{ steps.short-sha.outputs.sha }}
+#
+#
+#      - uses: actions/checkout@v4
+#        name: 'Checkout repository'
+#
+#
+#      ##############################
+#      # Run Linter against code base #
+#      ################################
+#
+#      - name: Lint Code Base
+#        uses: super-linter/super-linter/slim@v5
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          DISABLE_ERRORS: true
+#
+#      - name: notify Backend  lint Stage Succeeded
+#        uses: rjstone/discord-webhook-notify@v1
+#        if: success()
+#        with:
+#          severity: info
+#          details: "## > - **Lint stage Succeeded** "
+#          footer: sha ${{ env.SHA }}
+#          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#        env:
+#          SHA: ${{ env.SHA }}
+#
+#      - name: Test Failure
+#        uses: rjstone/discord-webhook-notify@v1
+#        if: failure()
+#        with:
+#          severity: error
+#          details: "## > - **Lint stage Failed**"
+#          footer: sha ${{ env.SHA }}
+#          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#        env:
+#          SHA: ${{ env.SHA }}
+#
+#      - name: Test Cancelled
+#        uses: rjstone/discord-webhook-notify@v1
+#        if: cancelled()
+#        with:
+#          severity: warn
+#          details: "## > - **Lint Cancelled!**"
+#          footer: sha ${{ env.SHA }}
+#          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#        env:
+#          SHA: ${{ env.SHA }}
+#
+#############################################################################
+#
+#############################################################################
 
-  #       - name: Build an image from Dockerfile
-  #         run: |
-  #           docker build -t docker.io/mostafaewida/hackmaze_backend_spring:${{ github.sha }}  .
-  #       - name: Run Trivy vulnerability scanner
-  #         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
-  #         with:
-  #           image-ref: 'docker.io/mostafaewida/hackmaze_backend_spring:${{ github.sha }}'
-  #           format: 'template'
-  #           template: '@/contrib/sarif.tpl'
-  #           output: 'trivy-results.sarif'
-  #           severity: 'CRITICAL,HIGH'
+#  analyze-codeQL:
+#    name: Analyze code
+#    runs-on: ubuntu-latest
+#    defaults:
+#      run:
+#        shell: bash
+#        working-directory: ${{ github.workspace }}
+#
+#    needs: [build-test]
+#    permissions:
+#      actions: read
+#      contents: read
+#      security-events: write
+#
+#
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        language: [ 'java' ]
+#        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
+#
+#    steps:
+#
+#    - name: short-sha
+#      uses: benjlevesque/short-sha@v2.2
+#      env:
+#        SHA: ${{ steps.short-sha.outputs.sha }}
+#
+#
+#    - name: Checkout repository
+#      uses: actions/checkout@v4
+#
+#    # Initializes the CodeQL tools for scanning.
+#    - name: Initialize CodeQL
+#      uses: github/codeql-action/init@v2
+#      with:
+#        languages: ${{ matrix.language }}
+#        # If you wish to specify custom queries, you can do so here or in a config file.
+#        # By default, queries listed here will override any specified in a config file.
+#        # Prefix the list here with "+" to use these queries and those in the config file.
+#        # queries: ./path/to/local/query, your-org/your-repo/queries@main
+#
+#    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
+#    # If this step fails, then you should remove it and run the build manually (see below)
+#
+#    # - name: Autobuild
+#    #   uses: github/codeql-action/autobuild@v2
+#
+#    - name: Set up JDK
+#      uses: actions/setup-java@v3
+#      with:
+#        java-version: 17
+#        distribution: 'temurin'
+#
+#    - name: install maven
+#      run: mvn clean package -DskipTests
+#
+#    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
+#    #    and modify them (or add more) to build your code if your project
+#    #    uses a compiled language
+#
+#    #- run: |
+#    #   make bootstrap
+#    #   make release
+#
+#    - name: Perform CodeQL Analysis
+#      uses: github/codeql-action/analyze@v3
+#
+#
+#
+#    - name: notify analyze-codeQL Stage Succeeded
+#      uses: rjstone/discord-webhook-notify@v1
+#      if: success()
+#      with:
+#        severity: info
+#        details: "##  > - **Analyze-codeQL stage Succeeded**"
+#        footer: sha ${{ env.SHA }}
+#        webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#      env:
+#        SHA: ${{ env.SHA }}
+#    - name: Test Failure
+#      uses: rjstone/discord-webhook-notify@v1
+#      if: failure()
+#      with:
+#        severity: error
+#        details: "##  > - **Analyze-codeQL stage Failed**"
+#        footer: sha ${{ env.SHA }}
+#        webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#      env:
+#        SHA: ${{ env.SHA }}
+#    - name: Test Cancelled
+#      uses: rjstone/discord-webhook-notify@v1
+#      if: cancelled()
+#      with:
+#        severity: warn
+#        details: "##  > - **Analyze-codeQL Cancelled!**"
+#        footer: sha ${{ env.SHA }}
+#        webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#      env:
+#          SHA: ${{ env.SHA }}
 
-  #       - name: Upload Trivy scan results to GitHub Security tab
-  #         uses: github/codeql-action/upload-sarif@v2
-  #         with:
-  #           sarif_file: 'trivy-results.sarif'
+#############################################################################
 
-  # #############################################################################
+#############################################################################
+#  analyze-codacy:
+#      needs: [build-test]
+#      defaults:
+#        run:
+#          shell: bash
+#          working-directory: ${{ github.workspace }}
+#
+#      permissions:
+#        contents: read # for actions/checkout to fetch code
+#        security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+#        actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+#      name: Codacy Security Scan
+#      runs-on: ubuntu-latest
+#      steps:
+#
+#        - name: short-sha
+#          uses: benjlevesque/short-sha@v2.2
+#          env:
+#            SHA: ${{ steps.short-sha.outputs.sha }}
+#
+#        # Checkout the repository to the GitHub Actions runner
+#        - name: Checkout code
+#          uses: actions/checkout@v3
+#
+#        # Execute Codacy Analysis CLI and generate a SARIF output with the security issues identified during the analysis
+#        - name: Run Codacy Analysis CLI
+#          uses: codacy/codacy-analysis-cli-action@d840f886c4bd4edc059706d09c6a1586111c540b
+#          with:
+#            # Check https://github.com/codacy/codacy-analysis-cli#project-token to get your project token from your Codacy repository
+#            # You can also omit the token and run the tools that support default configurations
+#            project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+#            verbose: true
+#            output: results.sarif
+#            format: sarif
+#            # Adjust severity of non-security issues
+#            gh-code-scanning-compat: true
+#            # Force 0 exit code to allow SARIF file generation
+#            # This will handover control about PR rejection to the GitHub side
+#            max-allowed-issues: 2147483647
+#
+#        # Upload the SARIF file generated in the previous step
+#        - name: Upload SARIF results file
+#          uses: github/codeql-action/upload-sarif@v2
+#          with:
+#            sarif_file: results.sarif
+#
+#        - name: notify analyze-codacy Stage Succeeded
+#          uses: rjstone/discord-webhook-notify@v1
+#          if: success()
+#          with:
+#            severity: info
+#            details: "##  > - **Analyze-codacy stage Succeeded**"
+#            footer: sha ${{ env.SHA }}
+#            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#          env:
+#            SHA: ${{ env.SHA }}
+#        - name: Test Failure
+#          uses: rjstone/discord-webhook-notify@v1
+#          if: failure()
+#          with:
+#            severity: error
+#            details: "##  > - **Analyze-codacy stage Failed**"
+#            footer: sha ${{ env.SHA }}
+#            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#          env:
+#            SHA: ${{ env.SHA }}
+#        - name: Test Cancelled
+#          uses: rjstone/discord-webhook-notify@v1
+#          if: cancelled()
+#          with:
+#            severity: warn
+#            details: "##  > - **Analyze-codacy Cancelled!**"
+#            footer: sha ${{ env.SHA }}
+#            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#          env:
+#              SHA: ${{ env.SHA }}
 
-  #############################################################################
+############################################################################
+
+############################################################################
+
+
+#  Trivy-scan:
+#    if: github.actor!= 'dependabot[bot]'
+#    needs: [build-test]
+#    defaults:
+#      run:
+#        shell: bash
+#        working-directory: ${{ github.workspace }}/
+#    permissions:
+#      contents: read # for actions/checkout to fetch code
+#      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+#      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+#    name: Trivy analysis
+#    runs-on: "ubuntu-22.04"
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Build an image from Dockerfile
+#        run: |
+#          docker build -t docker.io/mostafaewida/hackmaze_backend_spring:${{ github.sha }}  .
+#      - name: Run Trivy vulnerability scanner
+#        uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
+#        with:
+#          image-ref: 'docker.io/mostafaewida/hackmaze_backend_spring:${{ github.sha }}'
+#          format: 'template'
+#          template: '@/contrib/sarif.tpl'
+#          output: 'trivy-results.sarif'
+#          severity: 'CRITICAL,HIGH'
+#
+#      - name: Upload Trivy scan results to GitHub Security tab
+#        uses: github/codeql-action/upload-sarif@v2
+#        with:
+#          sarif_file: 'trivy-results.sarif'
+
+#############################################################################
+
+#############################################################################
 
   push_to_Docker_Hub:
-
+    
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
         working-directory: ${{ github.workspace }}
 
-    needs: [lint]
+#    needs: [build-test, Trivy-scan, analyze-codacy, analyze-codeQL]
+    needs: [build-test]
+    if: github.actor != 'dependabot[bot]' && github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: short-sha
         uses: benjlevesque/short-sha@v2.2
         env:
           SHA: ${{ steps.short-sha.outputs.sha }}
-
-
-
+          
+              
+      
 
 
       - name: Set up QEMU
@@ -426,11 +432,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERUSERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
+        
       - name: Checkout repository
         uses: actions/checkout@v4
-
-
+        
+        
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -442,7 +448,7 @@ jobs:
             ${{ secrets.DOCKERUSERNAME }}/${{ secrets.DOCKER_REPO }}:${{ env.SHA }}
 
 
-
+  
       - name: Clean up Docker Tags
         run: |
           #!/bin/bash
@@ -467,12 +473,12 @@ jobs:
           
               if [[  "$KEEP_TAGS" =~ "$tag" ]]; then
                   echo "keeping $tag"
-          
+                  
               else
-          
+                  
                   response=$(curl -i -X DELETE   -H "Accept: application/json"   -H "Authorization: JWT $HUB_TOKEN"   https://hub.docker.com/v2/repositories/$REPO_NAME/tags/$tag/)
                   echo "Deleted tag: $tag - Response: $response"
-          
+                  
               fi
           done
 
@@ -488,7 +494,7 @@ jobs:
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
         env:
           SHA: ${{ env.SHA }}
-
+            
       - name: Test Failure
         uses: rjstone/discord-webhook-notify@v1
         if: failure()
@@ -511,18 +517,119 @@ jobs:
           SHA: ${{ env.SHA }}
 
 
-  #############################################################################
+############################################################################
 
-  #############################################################################
+############################################################################
 
-
-
-  notify_Discord_CI_finish:
-    if: github.actor!= 'dependabot[bot]'
+  check_website:
     needs: [push_to_Docker_Hub]
+    runs-on: ubuntu-latest
+    outputs:
+      website_up: ${{ steps.check.outputs.website_up }}
+    steps:
+    
+    - name: check status trough a file 
+      run: |
+              echo '#!/bin/bash
+
+              # Perform the curl command to check website availability
+              curl --output /dev/null --silent --head --fail http://hm-1337.eastus.cloudapp.azure.com/ > /dev/null
+
+              # Capture the exit status of the curl command
+              status=$?
+              echo $status' > status.sh 
+              chmod +x status.sh 
+              ./status.sh > status.txt
+              
+    - id: check
+      run: |
+
+            status=$(cat status.txt 2>/dev/null || echo "")
+            
+            if [ -z "$status" ]; then
+              echo "status.txt is empty or not found. Assuming the website is down."
+              echo "Website is down"
+              echo "::set-output name=website_up::false"
+            elif [ $status -eq 0 ]; then
+              echo "Website is up"
+              echo "::set-output name=website_up::true"
+            else
+              echo "Website is down"
+              echo "::set-output name=website_up::false"
+            fi
+############################################################################
+
+############################################################################
+  deploy:
+    if: github.actor != 'dependabot[bot]' && github.event_name == 'push' && needs.check_website.outputs.website_up == 'true'
+    needs: [push_to_Docker_Hub,check_website]
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    steps:
+    - name: short-sha
+      uses: benjlevesque/short-sha@v2.2
+      env:
+        SHA: ${{ steps.short-sha.outputs.sha }}
+        
+            
+    - name: preparing the ssh
+      run: |
+          eval $(ssh-agent -s)
+          mkdir ~/.ssh
+          echo "${{ secrets.JUMP_KEY }}" > ~/.ssh/jumpkey.pem
+          chmod 600 ~/.ssh/jumpkey.pem
+          ssh-add ~/.ssh/jumpkey.pem
+
+
+    - name: deploying frontend to the cluster
+      run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/jumpkey.pem ${{ secrets.SSH_USER }}@${{ secrets.JUMP_IP }}  "ssh -i ${{ secrets.JUMP_PRIVATE_KEY_FILE }} ${{ secrets.SSH_USER }}@control ${{ secrets.DEPLOY_COMMAND }}"
+    
+
+          
+    - name: notify deploy Stage Succeeded
+      uses: rjstone/discord-webhook-notify@v1.0.4
+      if: success()
+      with:
+          severity: info
+          details: "##  > - **deploy stage Succeeded** "
+          footer: sha ${{ env.SHA }}
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      env:
+        SHA: ${{ env.SHA }}
+          
+    - name: Test Failure
+      uses: rjstone/discord-webhook-notify@v1.0.4
+      if: failure()
+      with:
+          severity: error
+          details: "##  > - **deploy stage Failed**"
+          footer: you can try ut now
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      env:
+        SHA: ${{ env.SHA }}
+    - name: Test Cancelled
+      uses: rjstone/discord-webhook-notify@v1.0.4
+      if: cancelled()
+      with:
+          severity: warn
+          details: "##  > - **deploy Cancelled!**"
+          footer: sha ${{ env.SHA }}
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      env:
+        SHA: ${{ env.SHA }}
+        
+############################################################################
+
+############################################################################
+
+  notify_Discord_CI_finish:
+    if: github.actor!= 'dependabot[bot]'
+    needs: [deploy]
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+  
     steps:
       - name: notify backend CI Workflow finished
         uses: rjstone/discord-webhook-notify@v1.0.4
@@ -536,9 +643,9 @@ jobs:
 
 
 
-  #############################################################################
+#############################################################################
 
-  #############################################################################
+#############################################################################
 
 
 
@@ -546,10 +653,10 @@ jobs:
 
   deploy-azure:
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]' && github.event_name == 'push' && github.ref == 'refs/heads/deploy'
-    needs: [push_to_Docker_Hub]
+    if: github.actor != 'dependabot[bot]' && github.event_name == 'push' && github.ref == 'refs/heads/deploy' && needs.check_website.outputs.website_up == 'false'
+    needs: [push_to_Docker_Hub,check_website]
     steps:
-
+    
       - name: deploy to azure
         uses: benc-uk/workflow-dispatch@v1
         with:
@@ -569,8 +676,8 @@ jobs:
       - name: notify Frontend CI Workflow finished
         uses: rjstone/discord-webhook-notify@v1.0.4
         with:
-          severity: info
-          color: '#7851A9'
-          details: "## > - **Frontend CI Workflow Finished!**"
-          footer: HORRAI.
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+            severity: info
+            color: '#7851A9'
+            details: "## > - **Frontend CI Workflow Finished!**"
+            footer: HORRAI.
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
