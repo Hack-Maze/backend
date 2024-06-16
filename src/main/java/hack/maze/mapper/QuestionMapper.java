@@ -32,6 +32,7 @@ public class QuestionMapper {
                 .builder()
                 .id(questionProgress.getQuestion().getId())
                 .solvedAt(questionProgress.getSolvedAt())
+                .answer(questionProgress.getQuestion().getAnswer())
                 .build();
     }
 

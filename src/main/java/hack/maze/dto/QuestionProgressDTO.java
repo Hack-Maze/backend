@@ -5,5 +5,5 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record QuestionProgressDTO(Long id, LocalDateTime solvedAt) {
+public record QuestionProgressDTO(Long id, LocalDateTime solvedAt, String answer) {
 }
