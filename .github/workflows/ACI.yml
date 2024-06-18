@@ -1,0 +1,70 @@
+name: build-push-file
+
+on:
+  workflow_dispatch:
+    inputs:
+      DockerArchiveUrl:
+        description: 'URL to the Docker context'
+        required: true
+      DockerTag:
+        description: 'Docker image tag'
+        required: true
+      WebhookUrl:
+        description: 'URL to the post workflow webhook'
+        required: false
+
+jobs:
+
+  push_to_Docker_Hub:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+  
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - uses: actions/checkout@v3
+      - name: download Arrchive
+        run: |  
+          URL=${{ github.event.inputs.DockerArchiveUrl }}
+         
+          wget  $URL
+
+      - name: Set filename
+        id: set_filename
+        run: |
+          URL=${{ github.event.inputs.DockerArchiveUrl }}
+          FILENAME=$(echo "$URL" | awk -F/ '{print $NF}')
+          echo "::set-output name=filename::$FILENAME"
+        
+      - name: Extract 
+        uses: ihiroky/extract-action@v1
+        with:
+          file_path: ${{ steps.set_filename.outputs.filename }}
+          extract_dir: .
+          verbose: true
+     
+      - name: Set filename
+        id: set_mazename
+        run: |
+          URL=${{ github.event.inputs.DockerArchiveUrl }}
+          MAZENAME=$(echo "$URL" | awk -F/ '{split($NF,a,"."); print a[1]}')
+          echo "::set-output name=mazename::$MAZENAME"
+          
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ steps.set_mazename.outputs.mazename }}
+          # file: ./dockerfile
+          push: true
+          tags: |
+            ttl.sh/${{ github.event.inputs.dockerTag }}:24h 
+
+      - name: Post workflow status
+        run: |
+          curl -X POST -H "Content-Type: application/json" -d '{"workflow_run_status": "success"}' ${{ github.event.inputs.WebhookUrl }}
