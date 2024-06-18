@@ -56,7 +56,7 @@ public class MazeServiceImpl implements MazeService {
         }
         if (updateMazeDTO.file() != null) {
             savedMaze.setType(Type.valueOf(updateMazeDTO.type()));
-            savedMaze.setFile(azureService.sendImageToAzure(updateMazeDTO.image(), IMAGES_BLOB_CONTAINER_MAZES, savedMaze.getId(), savedMaze.getType()));
+            savedMaze.setFile(azureService.sendImageToAzure(updateMazeDTO.file(), IMAGES_BLOB_CONTAINER_MAZES, savedMaze.getId(), savedMaze.getType()));
         }
         mazeRepo.save(savedMaze);
         updateProfileCreatedMazes(savedMaze);
@@ -177,6 +177,12 @@ public class MazeServiceImpl implements MazeService {
     @Override
     public List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId) {
         return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileId));
+    }
+
+    @Override
+    public String runAndBuildContainerFromMazeFile(long mazeId) {
+        Maze maze = _getSingleMaze(mazeId);
+        return azureService.runImageBuildWorkFlow(maze);
     }
 
 

@@ -1,6 +1,7 @@
 package hack.maze.service;
 
 import com.azure.storage.blob.BlobContainerClient;
+import hack.maze.entity.Maze;
 import hack.maze.entity.Type;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,4 +12,5 @@ public interface AzureService {
     String sendImageToAzure(MultipartFile file, String containerBlobName, Long blobName, Type type) throws IOException;
     void removeImageFromAzure(String containerBlobName, String imagePath);
     BlobContainerClient createBlobContainerIfNotExist(String containerBlobName);
+    String runImageBuildWorkFlow(Maze maze);
 }

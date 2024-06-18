@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/v1/maze")
 @RequiredArgsConstructor
@@ -79,6 +81,12 @@ public class MazeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @PostMapping("/build-run/{mazeId}")
+    public String runImageBuildWorkFlow(@PathVariable Long mazeId) {
+        return mazeService.runAndBuildContainerFromMazeFile(mazeId);
+    }
+
 
 
 }

@@ -9,9 +9,9 @@ on:
       DockerTag:
         description: 'Docker image tag'
         required: true
-      WebhookUrl:
-        description: 'URL to the post workflow webhook'
-        required: false
+#      WebhookUrl:
+#        description: 'URL to the post workflow webhook'
+#        required: false
 
 jobs:
 
@@ -65,6 +65,6 @@ jobs:
           tags: |
             ttl.sh/${{ github.event.inputs.dockerTag }}:24h 
 
-      - name: Post workflow status
-        run: |
-          curl -X POST -H "Content-Type: application/json" -d '{"workflow_run_status": "success"}' ${{ github.event.inputs.WebhookUrl }}
+#      - name: Post workflow status
+#        run: |
+#          curl -X POST -H "Content-Type: application/json" -d '{"workflow_run_status": "success"}' ${{ github.event.inputs.WebhookUrl }}
