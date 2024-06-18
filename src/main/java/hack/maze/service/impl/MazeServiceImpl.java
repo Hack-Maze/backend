@@ -7,6 +7,7 @@ import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Profile;
 import hack.maze.entity.Tag;
+import hack.maze.entity.Type;
 import hack.maze.repository.MazeRepo;
 import hack.maze.service.AzureService;
 import hack.maze.service.MazeService;
@@ -50,7 +51,13 @@ public class MazeServiceImpl implements MazeService {
         validateUpdateMazeDTO(updateMazeDTO);
         checkMazeExistence(updateMazeDTO.title());
         Maze savedMaze = mazeRepo.save(fillMazeInfo(updateMazeDTO));
-        savedMaze.setImage(azureService.sendImageToAzure(updateMazeDTO.image(), IMAGES_BLOB_CONTAINER_MAZES, savedMaze.getId()));
+        if (updateMazeDTO.image() != null) {
+            savedMaze.setImage(azureService.sendImageToAzure(updateMazeDTO.image(), IMAGES_BLOB_CONTAINER_MAZES, savedMaze.getId()));
+        }
+        if (updateMazeDTO.file() != null) {
+            savedMaze.setType(Type.valueOf(updateMazeDTO.type()));
+            savedMaze.setFile(azureService.sendImageToAzure(updateMazeDTO.image(), IMAGES_BLOB_CONTAINER_MAZES, savedMaze.getId(), savedMaze.getType()));
+        }
         mazeRepo.save(savedMaze);
         updateProfileCreatedMazes(savedMaze);
         return savedMaze.getId();

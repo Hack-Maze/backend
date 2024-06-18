@@ -34,6 +34,10 @@ public class Maze {
     private LocalDateTime createdAt;
     private boolean visibility;
     private String image;
+    private String file;
+
+    @Enumerated(EnumType.STRING)
+    private Type type;
     private int totalPoints;
 
     @Enumerated(EnumType.STRING)

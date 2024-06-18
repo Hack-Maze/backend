@@ -7,6 +7,7 @@ import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.models.BlobCorsRule;
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobServiceProperties;
+import hack.maze.entity.Type;
 import hack.maze.service.AzureService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +26,16 @@ import java.util.Objects;
 public class AzureServiceImpl implements AzureService {
 
     private final BlobServiceClient blobServiceClient;
-    private final List<String> allowedContentTypes = List.of("image/jpeg", "image/png", "image/gif");
+    private final List<String> allowedContentTypesForImages = List.of("image/jpeg", "image/png", "image/gif");
 
     @Override
     public String sendImageToAzure(MultipartFile image, String containerBlobName, Long blobName) throws IOException {
         if (!checkImage(image)) {
             return "";
         }
+
+        //! make sure the file type is dockerfile or not .....!!!
+
 
         // get blob container and create it if not exist
         BlobContainerClient imagesContainer = createBlobContainerIfNotExist(containerBlobName);
@@ -42,7 +46,7 @@ public class AzureServiceImpl implements AzureService {
 
         // construct image name
         // blobName + "/" + blobName.toString() + "." + imageExtension
-        String imageName = String.format("%s/%s.%s", blobName.toString(), blobName.toString(), imageExtension);
+        String imageName = String.format("%s/%s.%s", blobName.toString(), blobName, imageExtension);
 
         log.info("\n\n\n\t\t\tIMAGE_NAME: {}\n\n\n\n", imageName);
 
@@ -54,6 +58,29 @@ public class AzureServiceImpl implements AzureService {
         blobClient.upload(image.getInputStream(), image.getSize(), true);
 
         return blobClient.getBlobUrl();
+    }
+
+    @Override
+    public String sendImageToAzure(MultipartFile file, String containerBlobName, Long blobName, Type type) throws IOException {
+        BlobContainerClient imagesContainer = createBlobContainerIfNotExist(containerBlobName);
+        setCorsRules();
+        if (type.equals(Type.DOWNLOADABLE_FILE)) {
+            log.info("trying to upload DOWNLOADABLE_FILE.....");
+            String fileName = String.format("%s/%s", blobName.toString(), file.getOriginalFilename());
+            BlobClient blobClient = imagesContainer.getBlobClient(fileName);
+            blobClient.upload(file.getInputStream(), file.getSize(), true);
+            return blobClient.getBlobUrl();
+        } else {
+            if (!checkArchive(file)) {
+                log.warn("file not uploaded");
+                return "";
+            }
+            log.info("trying to upload DOCKER_FILE.....");
+            String compressedFile = String.format("%s/%s", blobName, file.getOriginalFilename());
+            BlobClient blobClient = imagesContainer.getBlobClient(compressedFile);
+            blobClient.upload(file.getInputStream(), file.getSize(), true);
+            return blobClient.getBlobUrl();
+        }
     }
 
     @Override
@@ -76,7 +103,15 @@ public class AzureServiceImpl implements AzureService {
         if (image.isEmpty()) {
             return false;
         }
-        return allowedContentTypes.contains(image.getContentType());
+        return allowedContentTypesForImages.contains(image.getContentType());
+    }
+
+    private boolean checkArchive(MultipartFile file) {
+        if (file.isEmpty()) {
+            return false;
+        }
+        String fileExtension = Objects.requireNonNull(file.getOriginalFilename()).split("\\.")[file.getOriginalFilename().split("\\.").length - 1];
+        return fileExtension.equals("zip");
     }
 
     @Override
