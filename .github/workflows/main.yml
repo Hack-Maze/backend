@@ -1,0 +1,37 @@
+name: build-push-file
+
+on: 
+  workflow_dispatch:
+
+jobs:
+
+  push_to_Docker_Hub:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+  
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+  
+        
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+        
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: https://hackmaze.blob.core.windows.net/docker/dockerfile2
+          push: false
+          tags: |
+            ttl.sh/quest:24h
+            
+      - name: push
+        run: |
+          docker push ttl.sh/quest:24h
+          
