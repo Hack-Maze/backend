@@ -1,17 +1,23 @@
 package hack.maze.service.impl;
 
 import com.azure.core.http.rest.PagedIterable;
+import com.azure.core.management.AzureEnvironment;
+import com.azure.core.management.Region;
+import com.azure.core.management.profile.AzureProfile;
+import com.azure.identity.ClientSecretCredential;
+import com.azure.identity.ClientSecretCredentialBuilder;
+import com.azure.resourcemanager.AzureResourceManager;
+import com.azure.resourcemanager.containerinstance.models.ContainerGroupRestartPolicy;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.models.BlobCorsRule;
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobServiceProperties;
+import hack.maze.dto.DockerfileAndUnzippedFolderDTO;
 import hack.maze.dto.DockerfileInfoDTO;
-import hack.maze.entity.AzureContainer;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Type;
-import hack.maze.service.AzureContainerService;
 import hack.maze.service.AzureService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,21 +31,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.io.*;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import static hack.maze.config.UserContext.getCurrentUser;
 
 
 @Service
@@ -48,7 +45,18 @@ import java.util.zip.ZipInputStream;
 public class AzureServiceImpl implements AzureService {
 
     private final RestTemplate restTemplate;
-    private final AzureContainerService azureContainerService;
+
+    @Value("${azure.activedirectory.client-id}")
+    private String clientId;
+
+    @Value("${azure.activedirectory.client-secret}")
+    private String clientSecret;
+
+    @Value("${azure.activedirectory.tenant-id}")
+    private String tenantId;
+
+    @Value("${azure.activedirectory.subscription-id}")
+    private String subscriptionId;
 
     @Value("${azure.github.token}")
     private String githubToken;
@@ -113,13 +121,15 @@ public class AzureServiceImpl implements AzureService {
 
     @Transactional
     protected void setEnvTemplateAndPortFromZipFile(Maze maze, MultipartFile file) throws IOException {
-        File dockerfilePath = getDockerfileFromZipFile(file);
-        if (dockerfilePath == null) {
+        DockerfileAndUnzippedFolderDTO dauzf = getDockerfileFromZipFile(file);
+        if (dauzf.dockerfile() == null) {
             throw new FileNotFoundException("dockerfile can't be found");
         }
-        DockerfileInfoDTO dockerfileInfoDTO = loopThroughDockerFileAndGetEnvAndPorts(dockerfilePath);
+        DockerfileInfoDTO dockerfileInfoDTO = loopThroughDockerFileAndGetEnvAndPorts(dauzf.dockerfile());
         maze.setEnvTemplate(dockerfileInfoDTO.env());
         maze.setPorts(dockerfileInfoDTO.ports());
+
+        deleteDirectory(dauzf.unzippedFolder());
     }
 
     private DockerfileInfoDTO loopThroughDockerFileAndGetEnvAndPorts(File dockerfile) {
@@ -163,17 +173,15 @@ public class AzureServiceImpl implements AzureService {
     }
 
 
-    private File getDockerfileFromZipFile(MultipartFile zippedFile) throws IOException {
+    private DockerfileAndUnzippedFolderDTO getDockerfileFromZipFile(MultipartFile zippedFile) throws IOException {
         File dir = unzipFile(zippedFile);
         File dockerfile = null;
         try {
             dockerfile = getDockerfileFromListOfFiles(dir);
         } catch (Exception e) {
             log.error(e.getMessage());
-        } finally {
-            deleteDirectory(dir);
         }
-        return dockerfile;
+        return DockerfileAndUnzippedFolderDTO.builder().dockerfile(dockerfile).unzippedFolder(dir).build();
     }
 
     private void deleteDirectory(File directory) {
@@ -190,14 +198,18 @@ public class AzureServiceImpl implements AzureService {
             }
         }
 
-        directory.delete();
+        if (!directory.delete()) {
+            log.error("can't delete dir");
+        }
     }
 
     private File unzipFile(MultipartFile zippedFile) throws IOException {
         File destDir = new File("src/main/java");
         String fileName = Objects.requireNonNull(zippedFile.getOriginalFilename()).split("\\.")[0];
         if (!destDir.exists()) {
-            destDir.mkdirs();
+            if (!destDir.mkdirs()) {
+                log.error("can't create dir");
+            }
         }
 
         try (ZipInputStream zipInputStream =
@@ -207,11 +219,15 @@ public class AzureServiceImpl implements AzureService {
             while ((entry = zipInputStream.getNextEntry()) != null) {
                 File file = new File(destDir, entry.getName());
                 if (entry.isDirectory()) {
-                    file.mkdirs();
+                    if (!file.mkdirs()) {
+                        log.error("can't create dir  ");
+                    }
                 } else {
                     File parentDir = file.getParentFile();
                     if (!parentDir.exists()) {
-                        parentDir.mkdirs();
+                        if (!parentDir.mkdirs()) {
+                            log.error("can't create dir ");
+                        }
                     }
                     try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
                         byte[] buffer = new byte[1024];
@@ -223,23 +239,19 @@ public class AzureServiceImpl implements AzureService {
                 }
                 zipInputStream.closeEntry();
             }
+            return new File("src/main/java/" + fileName);
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
         }
-        return new File("src/main/java/" + fileName);
     }
 
-    public File convert(MultipartFile multipartFile) throws IOException {
+    public File convert(MultipartFile multipartFile) {
         File file = new File(Objects.requireNonNull(multipartFile.getOriginalFilename()));
-        FileOutputStream fos = null;
 
-        try {
-            fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(multipartFile.getBytes());
         } catch (IOException e) {
             log.error(e.getMessage());
-        } finally {
-            if (fos != null) {
-                fos.close();
-            }
         }
 
         return file;
@@ -327,10 +339,38 @@ public class AzureServiceImpl implements AzureService {
 
     @Transactional
     protected void createAzureContainerFromImage(Maze maze) {
-        //! TODO: check if container id already running
-        AzureContainer savedAzureContainer = azureContainerService.saveAzureContainer(AzureContainer
-                .builder()
-                .build());
+        // Replace these with your own values
+        String name = maze.getTitle() + "-" + getCurrentUser() + "-" + UUID.randomUUID();
+        String imageName = maze.getDockerImageName();
+
+        ClientSecretCredential clientSecretCredential = new ClientSecretCredentialBuilder()
+                .clientId(clientId)
+                .clientSecret(clientSecret)
+                .tenantId(tenantId)
+                .build();
+
+        AzureProfile azureProfile = new AzureProfile(tenantId, subscriptionId, AzureEnvironment.AZURE);
+        AzureResourceManager azureResourceManager = AzureResourceManager
+                .authenticate(clientSecretCredential, azureProfile)
+                .withDefaultSubscription();
+
+        // Create the container group
+        azureResourceManager.containerGroups().define(name)
+                .withRegion(Region.ITALY_NORTH)
+                .withExistingResourceGroup(name)
+                .withLinux()
+                .withPublicImageRegistryOnly()
+                .withoutVolume()
+                .defineContainerInstance(name)
+                .withImage(imageName)
+                .withExternalTcpPort(80)
+                .withCpuCoreCount(1.0)
+                .withMemorySizeInGB(1.5)
+                .attach()
+                .withDnsPrefix(name)
+                .withRestartPolicy(ContainerGroupRestartPolicy.ALWAYS)
+                .create();
+//
     }
 
     private static HttpEntity<Map<String, Object>> getMapHttpEntity(HttpHeaders headers, String filePath, String mazeTitle) {
@@ -361,6 +401,9 @@ public class AzureServiceImpl implements AzureService {
                 .setMaxAgeInSeconds(3600);
         properties.setCors(List.of(corsRule));
         blobServiceClient.setProperties(properties);
+
+
     }
+
 
 }

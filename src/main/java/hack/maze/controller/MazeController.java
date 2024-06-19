@@ -83,8 +83,21 @@ public class MazeController {
     }
 
     @PostMapping("/build-run/{mazeId}")
-    public String runImageBuildWorkFlow(@PathVariable Long mazeId) {
-        return mazeService.runAndBuildContainerFromMazeFile(mazeId);
+    public ResponseEntity<?> runImageBuildWorkFlow(@PathVariable Long mazeId) {
+        try {
+            return ResponseEntity.ok(mazeService.buildImageFromMaze(mazeId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/run-container/{mazeId}")
+    public ResponseEntity<?> runContainer(@PathVariable Long mazeId) {
+        try {
+            return ResponseEntity.ok(mazeService.runContainer(mazeId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
 
