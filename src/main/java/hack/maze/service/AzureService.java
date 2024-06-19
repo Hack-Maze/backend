@@ -9,8 +9,9 @@ import java.io.IOException;
 
 public interface AzureService {
     String sendImageToAzure(MultipartFile image, String containerBlobName, Long blobName) throws IOException;
-    String sendImageToAzure(MultipartFile file, String containerBlobName, Long blobName, Type type) throws IOException;
+    String sendImageToAzure(MultipartFile file, String containerBlobName, Maze maze, Type type) throws IOException;
     void removeImageFromAzure(String containerBlobName, String imagePath);
     BlobContainerClient createBlobContainerIfNotExist(String containerBlobName);
     String runImageBuildWorkFlow(Maze maze);
+    String runYourContainer(Maze maze);
 }

@@ -3,14 +3,11 @@ package hack.maze.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Setter
@@ -35,6 +32,17 @@ public class Maze {
     private boolean visibility;
     private String image;
     private String file;
+    private String dockerImageName;
+    private String ports;
+
+    @ElementCollection
+    @MapKeyColumn(name = "key")
+    @Column(name = "value")
+    @CollectionTable(name = "maze_env_template", joinColumns = @JoinColumn(name = "maze_id"))
+    private Map<String, String> envTemplate;
+
+    @OneToMany(mappedBy = "maze")
+    private List<AzureContainer> azureContainers;
 
     @Enumerated(EnumType.STRING)
     private Type type;
