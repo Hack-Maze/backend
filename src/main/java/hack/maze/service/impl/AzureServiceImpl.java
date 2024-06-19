@@ -7,6 +7,7 @@ import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.models.BlobCorsRule;
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobServiceProperties;
+import hack.maze.dto.DockerfileInfoDTO;
 import hack.maze.entity.AzureContainer;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Type;
@@ -15,8 +16,6 @@ import hack.maze.service.AzureService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -26,9 +25,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
-import java.nio.file.Path;
-import java.util.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 
 @Service
@@ -38,7 +49,6 @@ public class AzureServiceImpl implements AzureService {
 
     private final RestTemplate restTemplate;
     private final AzureContainerService azureContainerService;
-    private final ResourceLoader resourceLoader;
 
     @Value("${azure.github.token}")
     private String githubToken;
@@ -51,8 +61,6 @@ public class AzureServiceImpl implements AzureService {
         if (!checkImage(image)) {
             return "";
         }
-
-        //! make sure the file type is dockerfile or not .....!!!
 
         // get blob container and create it if not exist
         BlobContainerClient imagesContainer = createBlobContainerIfNotExist(containerBlobName);
@@ -97,71 +105,63 @@ public class AzureServiceImpl implements AzureService {
             BlobClient blobClient = imagesContainer.getBlobClient(compressedFile);
             blobClient.upload(file.getInputStream(), file.getSize(), true);
             log.info("after uploading to azure blob storage");
-            setEnvTemplateFromZipFile(maze, file);
-//            setPortsFromZipFile(maze, file);
+            setEnvTemplateAndPortFromZipFile(maze, file);
             log.info("set env and port to the maze");
             return blobClient.getBlobUrl();
         }
     }
 
     @Transactional
-    protected void setEnvTemplateFromZipFile(Maze maze, MultipartFile file) throws IOException {
+    protected void setEnvTemplateAndPortFromZipFile(Maze maze, MultipartFile file) throws IOException {
         File dockerfilePath = getDockerfileFromZipFile(file);
         if (dockerfilePath == null) {
             throw new FileNotFoundException("dockerfile can't be found");
         }
-        // loop through dockerfile line by line and search for env keyword
-        Map<String, String> env = loopThroughDockerFileAndGetEnv(dockerfilePath);
-        // store env key and value in envSet
-        // update the env in azure container info
-        maze.setEnvTemplate(env);
+        DockerfileInfoDTO dockerfileInfoDTO = loopThroughDockerFileAndGetEnvAndPorts(dockerfilePath);
+        maze.setEnvTemplate(dockerfileInfoDTO.env());
+        maze.setPorts(dockerfileInfoDTO.ports());
     }
 
-    private Map<String, String> loopThroughDockerFileAndGetEnv(File dockerfile) {
+    private DockerfileInfoDTO loopThroughDockerFileAndGetEnvAndPorts(File dockerfile) {
         Map<String, String> env = new HashMap<>();
+        List<Integer> ports = new ArrayList<>();
         BufferedReader reader;
 
         try {
 
-            log.info("dockerfile: {}", dockerfile);
-
-//            if (!dockerfile.isFile()) {
-//                log.error("not a file");
-//            }
-            reader = new BufferedReader(new FileReader("/media/ziad/storage/work/freelancaya/hackMaze/target/classes/static/Quest/Dockerfile"));
-            log.info("reader: {}", reader);
+            reader = new BufferedReader(new FileReader(dockerfile));
             String line = reader.readLine();
+
             while (line != null) {
-                log.info("\n{}\n", line);
-//                if (line.contains("ENV") || line.contains("env")) {
-//                    String[] split = line.split("\\s+");
-//                    env.put(split[1], split[2]);
-//                }
+                if (line.contains("ENV") || line.contains("env")) {
+                    String[] split = line.split("\\s+");
+                    if (!split[2].contains("FLAG_PLACEHOLDER")) {
+                        throw new IOException("FLAG_PLACEHOLDER should be specified");
+                    }
+                    env.put(split[1], split[2]);
+                } else if (line.contains("EXPOSE") || line.contains("expose")) {
+                    String[] split = line.split("\\s+");
+                    for (int i = 1; i < split.length; i++) {
+                        if (split[i].contains("-")) {
+                            String[] split2 = split[i].split("-");
+                            for (int j = Integer.parseInt(split2[0]); j <= Integer.parseInt(split2[1]); j++) {
+                                ports.add(j);
+                            }
+                            continue;
+                        }
+                        ports.add(Integer.parseInt(split[i]));
+                    }
+                }
                 line = reader.readLine();
             }
+
             reader.close();
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-        return env;
+        return DockerfileInfoDTO.builder().env(env).ports(ports).build();
     }
 
-    @Transactional
-    protected void setPortsFromZipFile(Maze maze, MultipartFile file) throws IOException {
-        File dockerfilePath = getDockerfileFromZipFile(file);
-        if (dockerfilePath == null) {
-//            throw new FileNotFoundException("dockerfile can't be found");
-        }
-        // loop through dockerfile line by line and search for EXPOSE keyword
-        // store env key and value in ports list
-        // update the env in azure container info
-        StringBuilder sb = new StringBuilder(maze.getPorts() != null ? maze.getPorts() : "");
-        if (sb.isEmpty()) {
-            maze.setPorts(sb.append("8080").toString());
-        } else {
-            maze.setPorts(sb.append(",8080").toString());
-        }
-    }
 
     private File getDockerfileFromZipFile(MultipartFile zippedFile) throws IOException {
         File dir = unzipFile(zippedFile);
@@ -169,12 +169,10 @@ public class AzureServiceImpl implements AzureService {
         try {
             dockerfile = getDockerfileFromListOfFiles(dir);
         } catch (Exception e) {
-            log.error("_____" + e.getMessage());
+            log.error(e.getMessage());
         } finally {
             deleteDirectory(dir);
-            log.error("error happen while deleting dir");
         }
-        log.info("getDockerfileFromZipFile: {}", dockerfile);
         return dockerfile;
     }
 
@@ -196,9 +194,55 @@ public class AzureServiceImpl implements AzureService {
     }
 
     private File unzipFile(MultipartFile zippedFile) throws IOException {
-        Resource resource = resourceLoader.getResource("classpath:");
-        String folderPath = resource.getFile().getAbsolutePath() + "/static/Quest";
-        return new File(folderPath);
+        File destDir = new File("src/main/java");
+        String fileName = Objects.requireNonNull(zippedFile.getOriginalFilename()).split("\\.")[0];
+        if (!destDir.exists()) {
+            destDir.mkdirs();
+        }
+
+        try (ZipInputStream zipInputStream =
+                     new ZipInputStream(
+                             new FileInputStream(convert(zippedFile)))) {
+            ZipEntry entry;
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                File file = new File(destDir, entry.getName());
+                if (entry.isDirectory()) {
+                    file.mkdirs();
+                } else {
+                    File parentDir = file.getParentFile();
+                    if (!parentDir.exists()) {
+                        parentDir.mkdirs();
+                    }
+                    try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
+                        byte[] buffer = new byte[1024];
+                        int length;
+                        while ((length = zipInputStream.read(buffer)) > 0) {
+                            outputStream.write(buffer, 0, length);
+                        }
+                    }
+                }
+                zipInputStream.closeEntry();
+            }
+        }
+        return new File("src/main/java/" + fileName);
+    }
+
+    public File convert(MultipartFile multipartFile) throws IOException {
+        File file = new File(Objects.requireNonNull(multipartFile.getOriginalFilename()));
+        FileOutputStream fos = null;
+
+        try {
+            fos = new FileOutputStream(file);
+            fos.write(multipartFile.getBytes());
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        } finally {
+            if (fos != null) {
+                fos.close();
+            }
+        }
+
+        return file;
     }
 
     private File getDockerfileFromListOfFiles(File dir) {

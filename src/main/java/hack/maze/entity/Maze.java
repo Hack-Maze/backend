@@ -33,7 +33,9 @@ public class Maze {
     private String image;
     private String file;
     private String dockerImageName;
-    private String ports;
+
+    @ElementCollection(targetClass = Integer.class)
+    private List<Integer> ports;
 
     @ElementCollection
     @MapKeyColumn(name = "key")
