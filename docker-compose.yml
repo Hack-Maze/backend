@@ -1,13 +1,27 @@
 services:
   backend:
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "4444:4444"
     build:
       context: .
-    ports:
-      - 4444:4444
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+      - container-management
 
+      
+  container-management:
+    image: mostafaewida/hackmaze_container_management:latest
+    pull_policy: always
+    restart: always
+    ports:
+      - "80:80"
+    env_file:
+      - .env
+
+      
   db:
     image: postgres:16
     pull_policy: always
