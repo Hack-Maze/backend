@@ -69,7 +69,7 @@ jobs:
     - name: install maven
       run: mvn clean package -DskipTests
     - name: ls
-      run: ls -lar
+      run: ls -lar target 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
@@ -434,7 +434,8 @@ jobs:
           name: my-application-package # Name of the artifact to download
           path: ./target/ # Directory to download the artifact to
         
-
+      - run: ls -lar target
+      
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
