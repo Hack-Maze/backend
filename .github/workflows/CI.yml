@@ -432,7 +432,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: my-application-package # Name of the artifact to download
-          path: ./target/ # Directory to download the artifact to
+          path: /target # Directory to download the artifact to
         
       - run: ls -lar target
       
