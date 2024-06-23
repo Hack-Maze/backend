@@ -68,12 +68,13 @@ jobs:
         distribution: 'temurin'
     - name: install maven
       run: mvn clean package -DskipTests
-      
+    - name: ls
+      run: ls -lar
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: my-application-package
-        path: /target/app-0.0.1-SNAPSHOT.jar 
+        path: ./target/app-0.0.1-SNAPSHOT.jar 
         
     - name: notify Backend  Build-test Stage Succeeded
       uses: rjstone/discord-webhook-notify@v1
@@ -430,7 +431,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: my-application-package # Name of the artifact to download
-          path: target/ # Directory to download the artifact to
+          path: ./target/ # Directory to download the artifact to
         
 
       - name: Set up QEMU
