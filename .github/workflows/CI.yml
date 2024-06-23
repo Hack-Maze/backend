@@ -73,7 +73,13 @@ jobs:
       uses: rjstone/discord-webhook-notify@v1
       env:
         SHA: ${{ env.SHA }}
-        
+
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: my-application-package
+        path: /target/app-0.0.1-SNAPSHOT.jar app.jar
       
       if: success()
       with:
@@ -433,8 +439,11 @@ jobs:
           username: ${{ secrets.DOCKERUSERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
         
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: my-application-package # Name of the artifact to download
+        path: target/ # Directory to download the artifact to
         
         
       - name: Build and push
