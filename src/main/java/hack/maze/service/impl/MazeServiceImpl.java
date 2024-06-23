@@ -193,8 +193,8 @@ public class MazeServiceImpl implements MazeService {
 
     @Override
     @Transactional
-    public String buildImageFromMaze(Maze maze) {
-        return azureService.runImageBuildWorkFlow(maze);
+    public void buildImageFromMaze(Maze maze) {
+        azureService.runImageBuildWorkFlow(maze);
     }
 
     @Override

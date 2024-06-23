@@ -5,7 +5,7 @@ WORKDIR /build
 COPY pom.xml .
 COPY src ./src
 # Build the application using Maven
-RUN mvn clean package -DskipTests
+RUN mvn clean install -DskipTests
 
 
 FROM eclipse-temurin:17-jre-jammy AS final

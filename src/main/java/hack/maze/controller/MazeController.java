@@ -1,15 +1,18 @@
 package hack.maze.controller;
 
-import hack.maze.dto.CreateMazeDTO;
 import hack.maze.dto.UpdateMazeDTO;
-import hack.maze.repository.MazeRepo;
 import hack.maze.service.MazeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/maze")
@@ -17,7 +20,6 @@ import java.io.IOException;
 public class MazeController {
 
     private final MazeService mazeService;
-    private final MazeRepo mazeRepo;
 
     @PostMapping
     public ResponseEntity<?> createMaze(@ModelAttribute UpdateMazeDTO updateMazeDTO) {
@@ -99,7 +101,5 @@ public class MazeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
-
 
 }

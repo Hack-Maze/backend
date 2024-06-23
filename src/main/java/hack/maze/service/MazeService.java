@@ -21,6 +21,6 @@ public interface MazeService {
     boolean isCurrentUserSolverInMaze(long mazeId);
     List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId);
     String buildImageFromMaze(long mazeId);
-    String buildImageFromMaze(Maze maze);
+    void buildImageFromMaze(Maze maze);
     String runContainer(long mazeId);
 }

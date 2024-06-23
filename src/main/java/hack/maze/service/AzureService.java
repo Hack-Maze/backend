@@ -13,5 +13,6 @@ public interface AzureService {
     void removeImageFromAzure(String containerBlobName, String imagePath);
     BlobContainerClient createBlobContainerIfNotExist(String containerBlobName);
     String runImageBuildWorkFlow(Maze maze);
-    String runYourContainer(Maze maze);
+    void runYourContainer(Maze maze);
+    void stopRunningContainer(String resourceGroupName);
 }

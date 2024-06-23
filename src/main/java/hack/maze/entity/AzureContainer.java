@@ -36,8 +36,8 @@ public class AzureContainer {
     @ManyToOne
     @JoinColumn(name = "maze_id", referencedColumnName = "id")
     private Maze maze;
-
-    private String containerId;
+    private String resourceGroupName;
+    private String dns;
 
     @ElementCollection
     @MapKeyColumn(name="key")
