@@ -21,7 +21,7 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 USER appuser
-
+ 
 
 # Copy the executable from the "package" stage.
 # COPY  --from=build /build/target/app-0.0.1-SNAPSHOT.jar app.jar
