@@ -68,18 +68,19 @@ jobs:
         distribution: 'temurin'
     - name: install maven
       run: mvn clean package -DskipTests
-
+      
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: my-application-package
+        path: /target/app-0.0.1-SNAPSHOT.jar app.jar
     - name: notify Backend  Build-test Stage Succeeded
       uses: rjstone/discord-webhook-notify@v1
       env:
         SHA: ${{ env.SHA }}
 
     
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: my-application-package
-        path: /target/app-0.0.1-SNAPSHOT.jar app.jar
+
       
       if: success()
       with:
@@ -424,8 +425,12 @@ jobs:
           SHA: ${{ steps.short-sha.outputs.sha }}
           
               
-      
-
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: my-application-package # Name of the artifact to download
+          path: target/ # Directory to download the artifact to
+        
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -439,12 +444,7 @@ jobs:
           username: ${{ secrets.DOCKERUSERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
         
-    - name: Download artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: my-application-package # Name of the artifact to download
-        path: target/ # Directory to download the artifact to
-        
+
         
       - name: Build and push
         uses: docker/build-push-action@v5
