@@ -434,7 +434,7 @@ jobs:
           name: my-application-package # Name of the artifact to download
           path: . # Directory to download the artifact to
         
-      - run: ls -lar target
+      - run: ls -lar
       
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
