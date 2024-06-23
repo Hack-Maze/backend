@@ -73,7 +73,8 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: my-application-package
-        path: /target/app-0.0.1-SNAPSHOT.jar app.jar
+        path: /target/app-0.0.1-SNAPSHOT.jar 
+        
     - name: notify Backend  Build-test Stage Succeeded
       uses: rjstone/discord-webhook-notify@v1
       env:
