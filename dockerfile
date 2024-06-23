@@ -1,12 +1,13 @@
-FROM maven:3.6-openjdk-17-slim as build
+FROM maven:3.8.5-openjdk-17-slim as build
 
 WORKDIR /build
 
 COPY pom.xml .
-COPY src .
+COPY src ./src
 # Build the application using Maven
-
 RUN mvn clean install -DskipTests
+
+RUN ls -al /build/target
 
 FROM eclipse-temurin:17-jre-jammy AS final
 
