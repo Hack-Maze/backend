@@ -14,7 +14,7 @@ USER appuser
 
 # Set the command to run the application
 COPY ./target/app-0.0.1-SNAPSHOT.jar app.jar
-
+ 
 EXPOSE 4444
 
 CMD ["java", "-jar", "app.jar"]
