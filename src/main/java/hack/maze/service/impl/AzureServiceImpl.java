@@ -8,7 +8,6 @@ import com.azure.storage.blob.models.BlobCorsRule;
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobServiceProperties;
 import hack.maze.dto.CreateContainerResponseDTO;
-import hack.maze.dto.DockerfileAndUnzippedFolderDTO;
 import hack.maze.dto.DockerfileInfoDTO;
 import hack.maze.entity.AzureContainer;
 import hack.maze.entity.Maze;
@@ -128,15 +127,22 @@ public class AzureServiceImpl implements AzureService {
 
     @Transactional
     protected void setEnvTemplateAndPortFromZipFile(Maze maze, MultipartFile file) throws IOException {
-        DockerfileAndUnzippedFolderDTO dauzf = getDockerfileFromZipFile(file);
-        if (dauzf.dockerfile() == null) {
+        File dir = unzipFile(file);
+        File dockerfile = null;
+        try {
+            dockerfile = getDockerfileFromListOfFiles(dir);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+        if (dockerfile == null) {
             throw new FileNotFoundException("dockerfile can't be found");
         }
-        DockerfileInfoDTO dockerfileInfoDTO = loopThroughDockerFileAndGetEnvAndPorts(dauzf.dockerfile());
+        DockerfileInfoDTO dockerfileInfoDTO = loopThroughDockerFileAndGetEnvAndPorts(dockerfile);
         maze.setEnvTemplate(dockerfileInfoDTO.env());
         maze.setPorts(dockerfileInfoDTO.ports());
 
-        deleteDirectory(dauzf.unzippedFolder());
+        deleteDirectory(dir);
     }
 
     private DockerfileInfoDTO loopThroughDockerFileAndGetEnvAndPorts(File dockerfile) {
@@ -179,17 +185,6 @@ public class AzureServiceImpl implements AzureService {
         return DockerfileInfoDTO.builder().env(env).ports(ports).build();
     }
 
-
-    private DockerfileAndUnzippedFolderDTO getDockerfileFromZipFile(MultipartFile zippedFile) throws IOException {
-        File dir = unzipFile(zippedFile);
-        File dockerfile = null;
-        try {
-            dockerfile = getDockerfileFromListOfFiles(dir);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return DockerfileAndUnzippedFolderDTO.builder().dockerfile(dockerfile).unzippedFolder(dir).build();
-    }
 
     private void deleteDirectory(File directory) {
         if (directory == null || !directory.exists()) {
