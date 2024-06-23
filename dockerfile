@@ -5,6 +5,8 @@ WORKDIR /build
 COPY pom.xml .
 COPY src .
 # Build the application using Maven
+
+RUN rm -r ~/.m2/repository/hack/
 RUN mvn clean install -DskipTests
 
 
