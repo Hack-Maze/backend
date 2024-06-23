@@ -1,4 +1,4 @@
-FROM maven:3.8.5-openjdk-17-slim as build
+FROM maven:3.6-openjdk-17-slim as build
 
 WORKDIR /build
 
@@ -6,9 +6,7 @@ COPY pom.xml .
 COPY src .
 # Build the application using Maven
 
-RUN rm -r ~/.m2/repository/hack/
 RUN mvn clean install -DskipTests
-
 
 FROM eclipse-temurin:17-jre-jammy AS final
 
