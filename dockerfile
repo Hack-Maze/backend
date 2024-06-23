@@ -3,7 +3,7 @@ FROM maven:3.8.5-openjdk-17-slim as build
 WORKDIR /build
 
 COPY pom.xml .
-COPY src ./src
+COPY src .
 # Build the application using Maven
 RUN mvn clean install -DskipTests
 
