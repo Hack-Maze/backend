@@ -8,7 +8,7 @@
 # # Build the application using Maven
 # RUN mvn clean package -DskipTests
 
-
+ 
 FROM eclipse-temurin:17-jre-alpine AS final
 
 ARG UID=10001
