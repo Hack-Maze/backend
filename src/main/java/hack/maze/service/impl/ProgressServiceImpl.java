@@ -112,7 +112,7 @@ public class ProgressServiceImpl implements ProgressService {
     }
 
     @Override
-    @Cacheable("Leaderboard")
+    // @Cacheable("Leaderboard") commented out to avoid caching and to make it real-time leaderboard
     public List<ProfileLeaderboardDTO> getLeaderboard(LocalDate start, LocalDate end) {
         List<QuestionProgress> questionProgresses = questionProgressRepo.findBySolvedAtBetween(start, end);
         Map<Profile, Integer> profileScores = new HashMap<>();
