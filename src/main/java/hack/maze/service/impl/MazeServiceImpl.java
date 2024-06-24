@@ -1,6 +1,5 @@
 package hack.maze.service.impl;
 
-import hack.maze.dto.*;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
@@ -8,19 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import hack.maze.dto.CreatedMazeDTO;
+import hack.maze.dto.LeaderboardMazeDTO;
+import hack.maze.dto.MazeResponseDTO;
+import hack.maze.dto.MazeSimpleDTO;
+import hack.maze.dto.UpdateMazeDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static hack.maze.config.UserContext.getCurrentUser;
 import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_MAZES;
-import hack.maze.dto.LeaderboardMazeDTO;
-import hack.maze.dto.MazeResponseDTO;
-import hack.maze.dto.MazeSimpleDTO;
-import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Profile;
 import hack.maze.entity.Tag;
 import hack.maze.entity.Type;
+
+import static hack.maze.mapper.MazeMapper.fromMazeToCreatedMazeDTO;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeResponseDTO;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeToLeaderboardMazeDTO;
@@ -34,21 +36,6 @@ import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import static hack.maze.config.UserContext.getCurrentUser;
-import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_MAZES;
-import static hack.maze.mapper.MazeMapper.*;
-import static hack.maze.utils.GlobalMethods.checkUserAuthority;
-import static hack.maze.utils.GlobalMethods.nullMsg;
 
 @Service
 @RequiredArgsConstructor
