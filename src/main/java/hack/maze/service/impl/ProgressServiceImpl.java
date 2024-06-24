@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 
 import static hack.maze.config.UserContext.getCurrentUser;
 
@@ -139,37 +143,27 @@ public class ProgressServiceImpl implements ProgressService {
                 .sorted(Comparator.comparingInt(ProfileLeaderboardDTO::score).reversed())
                 .toList();
     }
-    // create another method to get this week progress for the current user only, not all users, make it does not take any parameters and return the progress of the current user for this week
+
     @Override
-    public List<ProfileLeaderboardDTO> getCurrentUserLeaderboardThisWeek() {
-        Profile profile = profileService._getSingleProfile(getCurrentUser());
-        LocalDate start = LocalDate.now().minusDays(7);
-        LocalDate end = LocalDate.now();
-        List<QuestionProgress> questionProgresses = questionProgressRepo.findBySolvedAtBetweenAndProfileId(start, end, profile.getId());
-        Map<Profile, Integer> profileScores = new HashMap<>();
-        for (QuestionProgress questionProgress : questionProgresses) {
-            Profile profile1 = questionProgress.getProfilePageProgress().getProfile();
-            int points = questionProgress.getQuestion().getPoints();
-            profileScores.put(profile1, profileScores.getOrDefault(profile1, 0) + points);
-        }
-        return profileScores.entrySet().stream()
-                .map(entry -> {
-                    Profile profile1 = entry.getKey();
-                    return ProfileLeaderboardDTO
-                            .builder()
-                            .profileId(profile1.getId())
-                            .username(profile1.getAppUser().getUsername())
-                            .image(profile1.getImage())
-                            .level(profile1.getLevel())
-                            .country(profile1.getCountry())
-                            .solvedMazesNumber(profile1.getCompletedMazes())
-                            .solvedMazes(getProfileSolvedMazes(profile1.getId()))
-                            .score(entry.getValue())
-                            .build();
-                })
-                .sorted(Comparator.comparingInt(ProfileLeaderboardDTO::score).reversed())
-                .toList();
-    }
+public Map<LocalDate, Long> getCurrentUserProgressThisWeek() {
+    Profile profile = profileService._getSingleProfile(getCurrentUser());
+    LocalDate start = LocalDate.now().minusDays(6); // Start from 6 days ago to include today and make a full week
+    LocalDate end = LocalDate.now();
+    List<QuestionProgress> questionProgresses = questionProgressRepo.findBySolvedAtBetweenAndProfileId(start, end, profile.getId());
+
+    // Initialize a map to hold the count of solved questions per day
+    Map<LocalDate, Long> solvedQuestionsPerDay = IntStream.rangeClosed(0, 6)
+            .mapToObj(start::plusDays)
+            .collect(Collectors.toMap(Function.identity(), date -> 0L));
+
+    // Populate the map with actual counts
+    questionProgresses.forEach(questionProgress -> {
+        LocalDate solvedDate = questionProgress.getSolvedAt().toLocalDate();
+        solvedQuestionsPerDay.computeIfPresent(solvedDate, (date, count) -> count + 1);
+    });
+
+    return solvedQuestionsPerDay;
+}
 
 
     @Override

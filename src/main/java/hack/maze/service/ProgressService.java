@@ -5,7 +5,7 @@ import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.ProfileLeaderboardDTO;
 import hack.maze.dto.ProfilePageProgressDTO;
 import hack.maze.entity.ProfileMazeProgress;
-
+import java.util.Map;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,5 +16,5 @@ public interface ProgressService {
     String markPageAsCompleted(Long pageId);
     List<ProfileLeaderboardDTO> getLeaderboard(LocalDate start, LocalDate end);
     List<LeaderboardMazeDTO> notCompletedMazes();
-    List<ProfileLeaderboardDTO> getCurrentUserLeaderboardThisWeek();
+    Map<LocalDate, Long> getCurrentUserProgressThisWeek();
 }

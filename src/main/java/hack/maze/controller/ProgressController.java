@@ -58,5 +58,13 @@ public class ProgressController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
+        // add week-progress endpoint to get the user progress in the current week using ProgressService.getCurrentUserProgressThisWeek()
+    @GetMapping("/week-progress")
+    public ResponseEntity<?> getCurrentUserProgressThisWeek() {
+        try {
+            return ResponseEntity.ok(progressService.getCurrentUserProgressThisWeek());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }

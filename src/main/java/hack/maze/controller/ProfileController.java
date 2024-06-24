@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hack.maze.dto.CreateProfileDTO;
 import hack.maze.service.ProfileService;
+import hack.maze.service.ProgressService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -47,15 +48,6 @@ public class ProfileController {
         }
     }
 
-    // get current user progress this week
-    @GetMapping("/week-progress")
-    public ResponseEntity<?> getCurrentUserProgressThisWeek() {
-        try {
-            return ResponseEntity.ok(profileService.getCurrentUserProgressThisWeek());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
 
 
 
