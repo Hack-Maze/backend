@@ -1,8 +1,5 @@
 package hack.maze.controller;
 
-import hack.maze.dto.UpdateMazeDTO;
-import hack.maze.service.MazeService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import hack.maze.dto.UpdateMazeDTO;
+import hack.maze.service.MazeService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/maze")
@@ -101,5 +102,24 @@ public class MazeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    
+    @GetMapping("/solved-mazes")
+    public ResponseEntity<?> getSolvedMazesByProfileId() {
+        try {
+            return ResponseEntity.ok(mazeService.getSolvedMazesByProfileId());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/solved-mazes/{profileId}")
+    public ResponseEntity<?> getSolvedMazesByProfileId(@PathVariable long profileId) {
+        try {
+            return ResponseEntity.ok(mazeService.getSolvedMazesByProfileId(profileId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    
 
 }

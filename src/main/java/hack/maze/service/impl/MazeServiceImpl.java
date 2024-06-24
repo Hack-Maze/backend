@@ -1,5 +1,17 @@
 package hack.maze.service.impl;
 
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import static hack.maze.config.UserContext.getCurrentUser;
+import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_MAZES;
 import hack.maze.dto.LeaderboardMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
@@ -8,31 +20,19 @@ import hack.maze.entity.Maze;
 import hack.maze.entity.Profile;
 import hack.maze.entity.Tag;
 import hack.maze.entity.Type;
+import static hack.maze.mapper.MazeMapper.fromMazeToMazeResponseDTO;
+import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
+import static hack.maze.mapper.MazeMapper.fromMazeToMazeToLeaderboardMazeDTO;
 import hack.maze.repository.MazeRepo;
 import hack.maze.service.AzureService;
 import hack.maze.service.MazeService;
 import hack.maze.service.ProfileService;
 import hack.maze.service.TagService;
 import hack.maze.service.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import static hack.maze.config.UserContext.getCurrentUser;
-import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_MAZES;
-import static hack.maze.mapper.MazeMapper.fromMazeToMazeResponseDTO;
-import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
-import static hack.maze.mapper.MazeMapper.fromMazeToMazeToLeaderboardMazeDTO;
 import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -179,10 +179,7 @@ public class MazeServiceImpl implements MazeService {
         return maze.getSolvers().contains(profile);
     }
 
-    @Override
-    public List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId) {
-        return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileId));
-    }
+
 
     @Override
     @Transactional
@@ -203,5 +200,16 @@ public class MazeServiceImpl implements MazeService {
         azureService.runYourContainer(maze);
         return "container created successfully";
     }
+
+    @Override
+    public List<LeaderboardMazeDTO> getSolvedMazesByProfileId() {
+        return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileService._getSingleProfile(getCurrentUser()).getId()));
+    }
+
+    @Override
+    public List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId) {
+        return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileId));
+    }
+
 
 }
