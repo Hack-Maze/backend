@@ -1,5 +1,6 @@
 package hack.maze.service.impl;
 
+import hack.maze.dto.*;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
@@ -33,6 +34,21 @@ import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import static hack.maze.config.UserContext.getCurrentUser;
+import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_MAZES;
+import static hack.maze.mapper.MazeMapper.*;
+import static hack.maze.utils.GlobalMethods.checkUserAuthority;
+import static hack.maze.utils.GlobalMethods.nullMsg;
 
 @Service
 @RequiredArgsConstructor
@@ -211,5 +227,28 @@ public class MazeServiceImpl implements MazeService {
         return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileId));
     }
 
+
+    @Override
+    public List<CreatedMazeDTO> createdMazes(String username) {
+        Profile profile = profileService._getSingleProfile(username);
+        return fromMazeToCreatedMazeDTO(profile.getCreatedMazes());
+    }
+
+    @Override
+    public List<CreatedMazeDTO> solvedMazes(String username) {
+        return fromMazeToCreatedMazeDTO(mazeRepo.getSolvedMazesByUsername(username));
+    }
+
+    @Override
+    public List<CreatedMazeDTO> getCurrentUserSolvedMazes() {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        return fromMazeToCreatedMazeDTO(mazeRepo.getSolvedMazesByProfileId(profile.getId()));
+    }
+
+    @Override
+    public List<CreatedMazeDTO> getCurrentUserCreatedMazes() {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        return fromMazeToCreatedMazeDTO(profile.getCreatedMazes());
+    }
 
 }

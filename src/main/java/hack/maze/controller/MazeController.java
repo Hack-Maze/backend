@@ -2,14 +2,7 @@ package hack.maze.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.service.MazeService;
@@ -121,5 +114,42 @@ public class MazeController {
         }
     }
     
+
+    @GetMapping("/created-mazes/{username}")
+    public ResponseEntity<?> getCreatedMazes(@PathVariable String username) {
+        try {
+            return ResponseEntity.ok(mazeService.createdMazes(username));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/solved-mazes/{username}")
+    public ResponseEntity<?> getSolvedMazes(@PathVariable String username) {
+        try {
+            return ResponseEntity.ok(mazeService.solvedMazes(username));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/current-user-solved-mazes")
+    public ResponseEntity<?> getCurrentUserSolvedMazes() {
+        try {
+            return ResponseEntity.ok(mazeService.getCurrentUserSolvedMazes());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/current-user-created-mazes")
+    public ResponseEntity<?> getCurrentUserCreatedMazes() {
+        try {
+            return ResponseEntity.ok(mazeService.getCurrentUserCreatedMazes());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 
 }
