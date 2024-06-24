@@ -265,4 +265,24 @@ public Map<LocalDate, Long> getCurrentUserProgressThisWeek() {
                 .enrolledAt(LocalDateTime.now())
                 .build());
     }
+
+    // type getCurrentLevelProgress method takes no arguments and returns json like the following:
+    // {
+    // "currentLevel": "NOOB",
+    // "points": 1000,
+    // "nextLevelPoints": 2000
+
+// }
+    @Override
+    public Map<String, Object> getCurrentLevelProgress() {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        Level currentLevel = profile.getLevel();
+        Level nextLevel = Level.values()[currentLevel.ordinal() + 1];
+        int nextLevelPoints = nextLevel.getValue();
+        return Map.of(
+                "currentLevel", currentLevel.name(),
+                "points", profile.getRank(),
+                "nextLevelPoints", nextLevelPoints
+        );
+    }
 }

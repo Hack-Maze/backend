@@ -17,4 +17,5 @@ public interface ProgressService {
     List<ProfileLeaderboardDTO> getLeaderboard(LocalDate start, LocalDate end);
     List<LeaderboardMazeDTO> notCompletedMazes();
     Map<LocalDate, Long> getCurrentUserProgressThisWeek();
+    Map<String, Object> getCurrentLevelProgress();
 }

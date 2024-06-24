@@ -67,4 +67,13 @@ public class ProgressController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @GetMapping("current-level-progress")
+    public ResponseEntity<?> getCurrentLevelProgress() {
+        try {
+            return ResponseEntity.ok(progressService.getCurrentLevelProgress());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }
