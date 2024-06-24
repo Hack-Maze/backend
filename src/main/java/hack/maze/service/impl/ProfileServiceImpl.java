@@ -1,27 +1,27 @@
 package hack.maze.service.impl;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import static hack.maze.config.UserContext.getCurrentUser;
+import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_PROFILES;
 import hack.maze.dto.CreateProfileDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.ProfileResponseDTO;
 import hack.maze.entity.AppUser;
 import hack.maze.entity.Profile;
+import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
+import static hack.maze.mapper.ProfileMapper.fromProfileToProfileResponseDTO;
 import hack.maze.repository.ProfileRepo;
 import hack.maze.service.AzureService;
 import hack.maze.service.ProfileService;
 import hack.maze.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-
-import static hack.maze.config.UserContext.getCurrentUser;
-import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_PROFILES;
-import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
-import static hack.maze.mapper.ProfileMapper.fromProfileToProfileResponseDTO;
 
 @Service
 @Slf4j
@@ -98,4 +98,10 @@ public class ProfileServiceImpl implements ProfileService {
         return fromMazeToMazeSimpleDTO(profile.getCreatedMazes());
     }
 
+    @Override
+    public List<MazeSimpleDTO> getAllProfileCreatedMazes(String username) {
+        Profile profile = _getSingleProfile(username);
+        return fromMazeToMazeSimpleDTO(profile.getCreatedMazes());
+    }
+    
 }
