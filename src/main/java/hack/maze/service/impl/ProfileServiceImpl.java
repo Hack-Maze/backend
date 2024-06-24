@@ -97,11 +97,13 @@ public class ProfileServiceImpl implements ProfileService {
         Profile profile = _getSingleProfile(getCurrentUser());
         return fromMazeToMazeSimpleDTO(profile.getCreatedMazes());
     }
-
+    
     @Override
-    public List<MazeSimpleDTO> getAllProfileCreatedMazes(String username) {
-        Profile profile = _getSingleProfile(username);
+    public List<MazeSimpleDTO> getAllProfileCreatedMazes(long profileId) {
+        Profile profile = _getSingleProfile(profileId);
         return fromMazeToMazeSimpleDTO(profile.getCreatedMazes());
     }
+
+    
     
 }

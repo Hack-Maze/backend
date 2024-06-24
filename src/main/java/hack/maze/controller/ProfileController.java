@@ -56,10 +56,10 @@ public class ProfileController {
         }
     }
     
-    @GetMapping("/created-mazes/{username}")
-    public ResponseEntity<?> getAllProfileCreatedMazes(@PathVariable String username) {
+    @GetMapping("/created-mazes/{profileId}")
+    public ResponseEntity<?> getAllProfileCreatedMazes(@PathVariable long profileId) {
         try {
-            return ResponseEntity.ok(profileService.getAllProfileCreatedMazes(username));
+            return ResponseEntity.ok(profileService.getAllProfileCreatedMazes(profileId));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
