@@ -16,4 +16,5 @@ public interface ProgressService {
     String markPageAsCompleted(Long pageId);
     List<ProfileLeaderboardDTO> getLeaderboard(LocalDate start, LocalDate end);
     List<LeaderboardMazeDTO> notCompletedMazes();
+    List<ProfileLeaderboardDTO> getCurrentUserLeaderboardThisWeek();
 }

@@ -47,22 +47,17 @@ public class ProfileController {
         }
     }
 
-    @GetMapping("/created-mazes")
-    public ResponseEntity<?> getAllProfileCreatedMazes() {
+    // get current user progress this week
+    @GetMapping("/week-progress")
+    public ResponseEntity<?> getCurrentUserProgressThisWeek() {
         try {
-            return ResponseEntity.ok(profileService.getAllProfileCreatedMazes());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-    
-    @GetMapping("/created-mazes/{profileId}")
-    public ResponseEntity<?> getAllProfileCreatedMazes(@PathVariable long profileId) {
-        try {
-            return ResponseEntity.ok(profileService.getAllProfileCreatedMazes(profileId));
+            return ResponseEntity.ok(profileService.getCurrentUserProgressThisWeek());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
+
+
 }
+    

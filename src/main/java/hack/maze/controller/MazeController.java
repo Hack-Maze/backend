@@ -95,26 +95,8 @@ public class MazeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-    
-    @GetMapping("/solved-mazes")
-    public ResponseEntity<?> getSolvedMazesByProfileId() {
-        try {
-            return ResponseEntity.ok(mazeService.getSolvedMazesByProfileId());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
 
-    @GetMapping("/solved-mazes/{profileId}")
-    public ResponseEntity<?> getSolvedMazesByProfileId(@PathVariable long profileId) {
-        try {
-            return ResponseEntity.ok(mazeService.getSolvedMazesByProfileId(profileId));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
     
-
     @GetMapping("/created-mazes/{username}")
     public ResponseEntity<?> getCreatedMazes(@PathVariable String username) {
         try {

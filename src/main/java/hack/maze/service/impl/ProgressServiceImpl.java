@@ -139,6 +139,38 @@ public class ProgressServiceImpl implements ProgressService {
                 .sorted(Comparator.comparingInt(ProfileLeaderboardDTO::score).reversed())
                 .toList();
     }
+    // create another method to get this week progress for the current user only, not all users, make it does not take any parameters and return the progress of the current user for this week
+    @Override
+    public List<ProfileLeaderboardDTO> getCurrentUserLeaderboardThisWeek() {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        LocalDate start = LocalDate.now().minusDays(7);
+        LocalDate end = LocalDate.now();
+        List<QuestionProgress> questionProgresses = questionProgressRepo.findBySolvedAtBetweenAndProfileId(start, end, profile.getId());
+        Map<Profile, Integer> profileScores = new HashMap<>();
+        for (QuestionProgress questionProgress : questionProgresses) {
+            Profile profile1 = questionProgress.getProfilePageProgress().getProfile();
+            int points = questionProgress.getQuestion().getPoints();
+            profileScores.put(profile1, profileScores.getOrDefault(profile1, 0) + points);
+        }
+        return profileScores.entrySet().stream()
+                .map(entry -> {
+                    Profile profile1 = entry.getKey();
+                    return ProfileLeaderboardDTO
+                            .builder()
+                            .profileId(profile1.getId())
+                            .username(profile1.getAppUser().getUsername())
+                            .image(profile1.getImage())
+                            .level(profile1.getLevel())
+                            .country(profile1.getCountry())
+                            .solvedMazesNumber(profile1.getCompletedMazes())
+                            .solvedMazes(getProfileSolvedMazes(profile1.getId()))
+                            .score(entry.getValue())
+                            .build();
+                })
+                .sorted(Comparator.comparingInt(ProfileLeaderboardDTO::score).reversed())
+                .toList();
+    }
+
 
     @Override
     public List<LeaderboardMazeDTO> notCompletedMazes() {
