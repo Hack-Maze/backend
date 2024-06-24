@@ -1,15 +1,12 @@
 package hack.maze.controller;
 
-import hack.maze.dto.CreateMazeDTO;
-import hack.maze.dto.UpdateMazeDTO;
-import hack.maze.repository.MazeRepo;
-import hack.maze.service.MazeService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import hack.maze.dto.UpdateMazeDTO;
+import hack.maze.service.MazeService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/maze")
@@ -17,7 +14,6 @@ import java.io.IOException;
 public class MazeController {
 
     private final MazeService mazeService;
-    private final MazeRepo mazeRepo;
 
     @PostMapping
     public ResponseEntity<?> createMaze(@ModelAttribute UpdateMazeDTO updateMazeDTO) {
@@ -99,7 +95,61 @@ public class MazeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    
+    @GetMapping("/solved-mazes")
+    public ResponseEntity<?> getSolvedMazesByProfileId() {
+        try {
+            return ResponseEntity.ok(mazeService.getSolvedMazesByProfileId());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
+    @GetMapping("/solved-mazes/{profileId}")
+    public ResponseEntity<?> getSolvedMazesByProfileId(@PathVariable long profileId) {
+        try {
+            return ResponseEntity.ok(mazeService.getSolvedMazesByProfileId(profileId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    
+
+    @GetMapping("/created-mazes/{username}")
+    public ResponseEntity<?> getCreatedMazes(@PathVariable String username) {
+        try {
+            return ResponseEntity.ok(mazeService.createdMazes(username));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/solved-mazes/{username}")
+    public ResponseEntity<?> getSolvedMazes(@PathVariable String username) {
+        try {
+            return ResponseEntity.ok(mazeService.solvedMazes(username));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/current-user-solved-mazes")
+    public ResponseEntity<?> getCurrentUserSolvedMazes() {
+        try {
+            return ResponseEntity.ok(mazeService.getCurrentUserSolvedMazes());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/current-user-created-mazes")
+    public ResponseEntity<?> getCurrentUserCreatedMazes() {
+        try {
+            return ResponseEntity.ok(mazeService.getCurrentUserCreatedMazes());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
 
 }

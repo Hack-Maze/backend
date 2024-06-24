@@ -1,38 +1,51 @@
 package hack.maze.service.impl;
 
 import com.azure.core.http.rest.PagedIterable;
-import com.azure.core.management.AzureEnvironment;
-import com.azure.core.management.Region;
-import com.azure.core.management.profile.AzureProfile;
-import com.azure.identity.ClientSecretCredential;
-import com.azure.identity.ClientSecretCredentialBuilder;
-import com.azure.resourcemanager.AzureResourceManager;
-import com.azure.resourcemanager.containerinstance.models.ContainerGroupRestartPolicy;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.models.BlobCorsRule;
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobServiceProperties;
-import hack.maze.dto.DockerfileAndUnzippedFolderDTO;
+import hack.maze.dto.CreateContainerResponseDTO;
 import hack.maze.dto.DockerfileInfoDTO;
+import hack.maze.entity.AzureContainer;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Type;
+import hack.maze.service.AzureContainerService;
 import hack.maze.service.AzureService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -46,22 +59,15 @@ public class AzureServiceImpl implements AzureService {
 
     private final RestTemplate restTemplate;
 
-    @Value("${azure.activedirectory.client-id}")
-    private String clientId;
-
-    @Value("${azure.activedirectory.client-secret}")
-    private String clientSecret;
-
-    @Value("${azure.activedirectory.tenant-id}")
-    private String tenantId;
-
-    @Value("${azure.activedirectory.subscription-id}")
-    private String subscriptionId;
-
     @Value("${azure.github.token}")
     private String githubToken;
 
+    @Value("${azure.create.container.domain}")
+    private String createAzureServiceDomain;
+
     private final BlobServiceClient blobServiceClient;
+    private final AzureContainerService azureContainerService;
+    private final TaskScheduler taskScheduler;
     private final List<String> allowedContentTypesForImages = List.of("image/jpeg", "image/png", "image/gif");
 
     @Override
@@ -121,20 +127,27 @@ public class AzureServiceImpl implements AzureService {
 
     @Transactional
     protected void setEnvTemplateAndPortFromZipFile(Maze maze, MultipartFile file) throws IOException {
-        DockerfileAndUnzippedFolderDTO dauzf = getDockerfileFromZipFile(file);
-        if (dauzf.dockerfile() == null) {
+        File dir = unzipFile(file);
+        File dockerfile = null;
+        try {
+            dockerfile = getDockerfileFromListOfFiles(dir);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+        if (dockerfile == null) {
             throw new FileNotFoundException("dockerfile can't be found");
         }
-        DockerfileInfoDTO dockerfileInfoDTO = loopThroughDockerFileAndGetEnvAndPorts(dauzf.dockerfile());
+        DockerfileInfoDTO dockerfileInfoDTO = loopThroughDockerFileAndGetEnvAndPorts(dockerfile);
         maze.setEnvTemplate(dockerfileInfoDTO.env());
         maze.setPorts(dockerfileInfoDTO.ports());
 
-        deleteDirectory(dauzf.unzippedFolder());
+        deleteDirectory(dir);
     }
 
     private DockerfileInfoDTO loopThroughDockerFileAndGetEnvAndPorts(File dockerfile) {
         Map<String, String> env = new HashMap<>();
-        List<Integer> ports = new ArrayList<>();
+        List<String> ports = new ArrayList<>();
         BufferedReader reader;
 
         try {
@@ -155,11 +168,11 @@ public class AzureServiceImpl implements AzureService {
                         if (split[i].contains("-")) {
                             String[] split2 = split[i].split("-");
                             for (int j = Integer.parseInt(split2[0]); j <= Integer.parseInt(split2[1]); j++) {
-                                ports.add(j);
+                                ports.add(String.valueOf(j));
                             }
                             continue;
                         }
-                        ports.add(Integer.parseInt(split[i]));
+                        ports.add(split[i]);
                     }
                 }
                 line = reader.readLine();
@@ -172,17 +185,6 @@ public class AzureServiceImpl implements AzureService {
         return DockerfileInfoDTO.builder().env(env).ports(ports).build();
     }
 
-
-    private DockerfileAndUnzippedFolderDTO getDockerfileFromZipFile(MultipartFile zippedFile) throws IOException {
-        File dir = unzipFile(zippedFile);
-        File dockerfile = null;
-        try {
-            dockerfile = getDockerfileFromListOfFiles(dir);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return DockerfileAndUnzippedFolderDTO.builder().dockerfile(dockerfile).unzippedFolder(dir).build();
-    }
 
     private void deleteDirectory(File directory) {
         if (directory == null || !directory.exists()) {
@@ -296,7 +298,6 @@ public class AzureServiceImpl implements AzureService {
             return false;
         }
         String fileExtension = Objects.requireNonNull(file.getOriginalFilename()).split("\\.")[file.getOriginalFilename().split("\\.").length - 1];
-        log.info("fileExtension: {}\n", fileExtension);
         return fileExtension.equals("zip");
     }
 
@@ -319,8 +320,6 @@ public class AzureServiceImpl implements AzureService {
         headers.set(HttpHeaders.AUTHORIZATION, "token " + githubToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        log.info(headers.toString());
-
         HttpEntity<Map<String, Object>> entity = getMapHttpEntity(headers, maze.getFile(), maze.getTitle());
 
         restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
@@ -331,46 +330,77 @@ public class AzureServiceImpl implements AzureService {
 
     @Override
     @Transactional
-    public String runYourContainer(Maze maze) {
-//        String dockerImageName = maze.getDockerImageName();
-        createAzureContainerFromImage(maze);
-        return "";
+    public void runYourContainer(Maze maze) {
+
+        String url = createAzureServiceDomain + "/start-container";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("user_name", getCurrentUser());
+        requestBody.put("container_image", maze.getDockerImageName());
+        Map<String, String> env = maze.getEnvTemplate();
+        for (var m : env.entrySet()) {
+            m.setValue(m.getValue().replace("FLAG_PLACEHOLDER", UUID.randomUUID().toString()));
+        }
+        Map<String, String> newMap = new HashMap<>();
+
+        requestBody.put("environment_variables", env);
+        requestBody.put("open_ports", maze.getPorts());
+        requestBody.put("maze_title", maze.getTitle());
+
+        BeanUtils.copyProperties(newMap, env);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        ResponseEntity<CreateContainerResponseDTO> d = restTemplate.exchange(url, HttpMethod.POST, entity, CreateContainerResponseDTO.class);
+
+        if (d.getBody() == null) {
+            throw new RuntimeException("didn't have the expected response");
+        }
+
+        CreateContainerResponseDTO resBody = d.getBody();
+
+        azureContainerService.saveAzureContainer(AzureContainer
+                .builder()
+                .dns(resBody.DNS())
+                .env(newMap)
+                .resourceGroupName(resBody.resource_group_name())
+                .maze(maze)
+                .build());
+
+
+        // create scheduler to stop the container after 1h
+        runRoutine(resBody.resource_group_name());
+
+        // delete azure container instance
+        azureContainerService.deleteAzureContainer(resBody.resource_group_name());
+
+        log.info("scheduler started successfully");
     }
 
-    @Transactional
-    protected void createAzureContainerFromImage(Maze maze) {
-        // Replace these with your own values
-        String name = maze.getTitle() + "-" + getCurrentUser() + "-" + UUID.randomUUID();
-        String imageName = maze.getDockerImageName();
+    private void runRoutine(String resourceGroupName) {
+        LocalDateTime ldt = LocalDateTime.now().plusHours(1);
+        Instant instant = ldt.atZone(ZoneId.of("Africa/Cairo")).toInstant();
+        taskScheduler.schedule(() -> stopRunningContainer(resourceGroupName), instant);
+    }
 
-        ClientSecretCredential clientSecretCredential = new ClientSecretCredentialBuilder()
-                .clientId(clientId)
-                .clientSecret(clientSecret)
-                .tenantId(tenantId)
-                .build();
+    @Override
+    public void stopRunningContainer(String resourceGroupName) {
+        String url = createAzureServiceDomain + "/stop-container";
 
-        AzureProfile azureProfile = new AzureProfile(tenantId, subscriptionId, AzureEnvironment.AZURE);
-        AzureResourceManager azureResourceManager = AzureResourceManager
-                .authenticate(clientSecretCredential, azureProfile)
-                .withDefaultSubscription();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Create the container group
-        azureResourceManager.containerGroups().define(name)
-                .withRegion(Region.ITALY_NORTH)
-                .withExistingResourceGroup(name)
-                .withLinux()
-                .withPublicImageRegistryOnly()
-                .withoutVolume()
-                .defineContainerInstance(name)
-                .withImage(imageName)
-                .withExternalTcpPort(80)
-                .withCpuCoreCount(1.0)
-                .withMemorySizeInGB(1.5)
-                .attach()
-                .withDnsPrefix(name)
-                .withRestartPolicy(ContainerGroupRestartPolicy.ALWAYS)
-                .create();
-//
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("resource_group_name", resourceGroupName);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        ResponseEntity<String> d = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+        log.info(d.getBody());
     }
 
     private static HttpEntity<Map<String, Object>> getMapHttpEntity(HttpHeaders headers, String filePath, String mazeTitle) {
@@ -381,9 +411,6 @@ public class AzureServiceImpl implements AzureService {
         filePath = filePath.replace("%2F", "/");
         inputs.put("DockerArchiveUrl", filePath);
         inputs.put("DockerTag", mazeTitle);
-
-        log.info("filePath: {}", filePath);
-        log.info("mazeTitle: {}", mazeTitle);
 
         requestBody.put("inputs", inputs);
 

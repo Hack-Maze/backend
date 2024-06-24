@@ -1,24 +1,5 @@
 package hack.maze.service.impl;
 
-import hack.maze.dto.LeaderboardMazeDTO;
-import hack.maze.dto.MazeResponseDTO;
-import hack.maze.dto.MazeSimpleDTO;
-import hack.maze.dto.UpdateMazeDTO;
-import hack.maze.entity.Maze;
-import hack.maze.entity.Profile;
-import hack.maze.entity.Tag;
-import hack.maze.entity.Type;
-import hack.maze.repository.MazeRepo;
-import hack.maze.service.AzureService;
-import hack.maze.service.MazeService;
-import hack.maze.service.ProfileService;
-import hack.maze.service.TagService;
-import hack.maze.service.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
@@ -26,13 +7,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import hack.maze.dto.CreatedMazeDTO;
+import hack.maze.dto.LeaderboardMazeDTO;
+import hack.maze.dto.MazeResponseDTO;
+import hack.maze.dto.MazeSimpleDTO;
+import hack.maze.dto.UpdateMazeDTO;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import static hack.maze.config.UserContext.getCurrentUser;
 import static hack.maze.constant.AzureConstant.IMAGES_BLOB_CONTAINER_MAZES;
+import hack.maze.entity.Maze;
+import hack.maze.entity.Profile;
+import hack.maze.entity.Tag;
+import hack.maze.entity.Type;
+
+import static hack.maze.mapper.MazeMapper.fromMazeToCreatedMazeDTO;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeResponseDTO;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeSimpleDTO;
 import static hack.maze.mapper.MazeMapper.fromMazeToMazeToLeaderboardMazeDTO;
+import hack.maze.repository.MazeRepo;
+import hack.maze.service.AzureService;
+import hack.maze.service.MazeService;
+import hack.maze.service.ProfileService;
+import hack.maze.service.TagService;
+import hack.maze.service.UserService;
 import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -179,10 +182,7 @@ public class MazeServiceImpl implements MazeService {
         return maze.getSolvers().contains(profile);
     }
 
-    @Override
-    public List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId) {
-        return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileId));
-    }
+
 
     @Override
     @Transactional
@@ -193,8 +193,8 @@ public class MazeServiceImpl implements MazeService {
 
     @Override
     @Transactional
-    public String buildImageFromMaze(Maze maze) {
-        return azureService.runImageBuildWorkFlow(maze);
+    public void buildImageFromMaze(Maze maze) {
+        azureService.runImageBuildWorkFlow(maze);
     }
 
     @Override
@@ -202,6 +202,40 @@ public class MazeServiceImpl implements MazeService {
         Maze maze = _getSingleMaze(mazeId);
         azureService.runYourContainer(maze);
         return "container created successfully";
+    }
+
+    @Override
+    public List<LeaderboardMazeDTO> getSolvedMazesByProfileId() {
+        return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileService._getSingleProfile(getCurrentUser()).getId()));
+    }
+
+    @Override
+    public List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId) {
+        return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileId));
+    }
+
+
+    @Override
+    public List<CreatedMazeDTO> createdMazes(String username) {
+        Profile profile = profileService._getSingleProfile(username);
+        return fromMazeToCreatedMazeDTO(profile.getCreatedMazes());
+    }
+
+    @Override
+    public List<CreatedMazeDTO> solvedMazes(String username) {
+        return fromMazeToCreatedMazeDTO(mazeRepo.getSolvedMazesByUsername(username));
+    }
+
+    @Override
+    public List<CreatedMazeDTO> getCurrentUserSolvedMazes() {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        return fromMazeToCreatedMazeDTO(mazeRepo.getSolvedMazesByProfileId(profile.getId()));
+    }
+
+    @Override
+    public List<CreatedMazeDTO> getCurrentUserCreatedMazes() {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        return fromMazeToCreatedMazeDTO(profile.getCreatedMazes());
     }
 
 }

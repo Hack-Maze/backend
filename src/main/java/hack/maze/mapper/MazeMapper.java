@@ -1,9 +1,6 @@
 package hack.maze.mapper;
 
-import hack.maze.dto.LeaderboardMazeDTO;
-import hack.maze.dto.MazeProgressDTO;
-import hack.maze.dto.MazeResponseDTO;
-import hack.maze.dto.MazeSimpleDTO;
+import hack.maze.dto.*;
 import hack.maze.entity.Maze;
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,5 +68,19 @@ public class MazeMapper {
                 .difficulty(maze.getDifficulty())
                 .build();
     }
+
+    public static List<CreatedMazeDTO> fromMazeToCreatedMazeDTO(List<Maze> mazes) {
+        return mazes.stream().map(MazeMapper::fromMazeToCreatedMazeDTO).toList();
+    }
+
+    public static CreatedMazeDTO fromMazeToCreatedMazeDTO(Maze maze) {
+        return CreatedMazeDTO
+                .builder()
+                .id(maze.getId())
+                .image(maze.getImage())
+                .title(maze.getTitle())
+                .build();
+    }
+
 
 }

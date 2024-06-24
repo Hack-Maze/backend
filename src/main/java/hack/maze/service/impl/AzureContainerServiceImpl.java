@@ -15,12 +15,18 @@ public class AzureContainerServiceImpl implements AzureContainerService {
     private final AzureContainerRepo azureContainerRepo;
 
     @Override
-    public AzureContainer getSingleAzureContainer(long mazeId) {
-        return azureContainerRepo.findByMazeId(mazeId).orElseThrow(() -> new RuntimeException("maze with id [" + mazeId + "] not found"));
+    public AzureContainer getSingleAzureContainer(String resourceGroupName) {
+        return azureContainerRepo.findByResourceGroupName(resourceGroupName).orElseThrow(() -> new RuntimeException("No Azure Container found for resourceGroupName: " + resourceGroupName));
     }
 
     @Override
-    public AzureContainer saveAzureContainer(AzureContainer azureContainer) {
-        return azureContainerRepo.save(azureContainer);
+    public void saveAzureContainer(AzureContainer azureContainer) {
+        azureContainerRepo.save(azureContainer);
+    }
+
+    @Override
+    public void deleteAzureContainer(String resourceGroupName) {
+        AzureContainer ac = getSingleAzureContainer(resourceGroupName);
+        azureContainerRepo.delete(ac);
     }
 }

@@ -1,9 +1,14 @@
 package hack.maze.service;
 
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.util.List;
+
 import hack.maze.dto.LeaderboardMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
 import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
+import hack.maze.dto.*;
 import hack.maze.entity.Maze;
 
 import java.io.IOException;
@@ -19,8 +24,13 @@ public interface MazeService {
     String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) throws IOException;
     boolean isCurrentUserEnrolledInMaze(long mazeId);
     boolean isCurrentUserSolverInMaze(long mazeId);
+    List<LeaderboardMazeDTO> getSolvedMazesByProfileId();
     List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId);
     String buildImageFromMaze(long mazeId);
-    String buildImageFromMaze(Maze maze);
+    void buildImageFromMaze(Maze maze);
     String runContainer(long mazeId);
+    List<CreatedMazeDTO> createdMazes(String username);
+    List<CreatedMazeDTO> solvedMazes(String username);
+    List<CreatedMazeDTO> getCurrentUserSolvedMazes();
+    List<CreatedMazeDTO> getCurrentUserCreatedMazes();
 }

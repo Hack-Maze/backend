@@ -16,5 +16,8 @@ public interface MazeRepo extends JpaRepository<Maze, Long> {
     @Query("SELECT m FROM Maze m JOIN m.solvers s WHERE s.id = ?1")
     List<Maze> getSolvedMazesByProfileId(long profileId);
 
+    @Query("SELECT m FROM Maze m JOIN m.solvers s WHERE s.appUser.username = ?1")
+    List<Maze> getSolvedMazesByUsername(String username);
+
 
 }

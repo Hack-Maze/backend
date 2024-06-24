@@ -11,4 +11,7 @@ public interface AzureContainerRepo extends JpaRepository<AzureContainer, Long> 
     @Query("SELECT ac FROM AzureContainer ac WHERE ac.maze.id = ?1")
     Optional<AzureContainer> findByMazeId(Long maze);
 
+    @Query("SELECT ac FROM AzureContainer ac WHERE ac.resourceGroupName = ?1")
+    Optional<AzureContainer> findByResourceGroupName(String resourceGroupName);
+
 }
