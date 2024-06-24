@@ -35,6 +35,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.LinkedHashMap;
+
+
 import static hack.maze.config.UserContext.getCurrentUser;
 
 @Service
@@ -145,25 +150,26 @@ public class ProgressServiceImpl implements ProgressService {
     }
 
     @Override
-public Map<LocalDate, Long> getCurrentUserProgressThisWeek() {
-    Profile profile = profileService._getSingleProfile(getCurrentUser());
-    LocalDate start = LocalDate.now().minusDays(6); // Start from 6 days ago to include today and make a full week
-    LocalDate end = LocalDate.now();
-    List<QuestionProgress> questionProgresses = questionProgressRepo.findBySolvedAtBetweenAndProfileId(start, end, profile.getId());
+    public Map<String, Long> getCurrentUserProgressThisWeek() { 
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        LocalDate start = LocalDate.now().minusDays(6); // Start from 6 days ago to include today and make a full week
+        LocalDate end = LocalDate.now();
+        List<QuestionProgress> questionProgresses = questionProgressRepo.findBySolvedAtBetweenAndProfileId(start, end, profile.getId());
 
-    // Initialize a map to hold the count of solved questions per day
-    Map<LocalDate, Long> solvedQuestionsPerDay = IntStream.rangeClosed(0, 6)
-            .mapToObj(start::plusDays)
-            .collect(Collectors.toMap(Function.identity(), date -> 0L));
+        // Initialize a map to hold the count of solved questions per day, formatted as "dd MMMM"
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM", Locale.ENGLISH);
+        Map<String, Long> solvedQuestionsPerDay = IntStream.rangeClosed(0, 6)
+                .mapToObj(start::plusDays)
+                .collect(Collectors.toMap(date -> date.format(formatter), date -> 0L, (existing, replacement) -> existing, LinkedHashMap::new));
 
-    // Populate the map with actual counts
-    questionProgresses.forEach(questionProgress -> {
-        LocalDate solvedDate = questionProgress.getSolvedAt().toLocalDate();
-        solvedQuestionsPerDay.computeIfPresent(solvedDate, (date, count) -> count + 1);
-    });
+        // Populate the map with actual counts
+        questionProgresses.forEach(questionProgress -> {
+            String solvedDate = questionProgress.getSolvedAt().toLocalDate().format(formatter);
+            solvedQuestionsPerDay.computeIfPresent(solvedDate, (date, count) -> count + 1);
+        });
 
-    return solvedQuestionsPerDay;
-}
+        return solvedQuestionsPerDay;
+    }
 
 
     @Override
