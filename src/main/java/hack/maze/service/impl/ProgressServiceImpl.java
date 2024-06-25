@@ -18,6 +18,7 @@ import hack.maze.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +55,7 @@ public class ProgressServiceImpl implements ProgressService {
     private final QuestionProgressRepo questionProgressRepo;
     private final ProfileMazeProgressRepo profileMazeProgressRepo;
     private final ProfilePageProgressRepo profilePageProgressRepo;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -76,7 +78,7 @@ public class ProgressServiceImpl implements ProgressService {
         ProfileMazeProgress pmp = profileMazeProgressRepo.findByProfileIdAndMazeId(profile.getId(), page.getMaze().getId()).orElseThrow(() -> new RuntimeException("User not enrolled to this maze yet"));
         ProfilePageProgress ppp = findOrCreateProfilePageProgress(profile, page, pmp, false);
         checkIfUserAlreadySolveThisQuestion(profile.getId(), question.getId());
-        checkAnswer(question.getAnswer(), answer);
+        checkAnswer(question, answer);
         QuestionProgress qp = createQuestionProgress(profile, question, ppp);
         updateProfileInfo(profile, question.getPoints(), qp.getSolvedAt());
         updatePageCompletionStatus(ppp, page);
@@ -182,9 +184,15 @@ public class ProgressServiceImpl implements ProgressService {
         return mazeService.getSolvedMazesByProfileId(profileId);
     }
 
-    private void checkAnswer(String correctAnswer, String userAnswer) {
-        if (!Objects.equals(correctAnswer.toLowerCase(), userAnswer.toLowerCase())) {
-            throw new RuntimeException("Wrong answer");
+    private void checkAnswer(Question question, String userAnswer) {
+        if (question.getType() == QuestionType.STATIC) {
+            if (!Objects.equals(question.getAnswer().toLowerCase(), userAnswer.toLowerCase())) {
+                throw new RuntimeException("Wrong answer");
+            }
+        } else {
+            if (!passwordEncoder.matches(getCurrentUser() + "-" + question.getPage().getMaze().getId() + "-" + question.getId(), userAnswer)) {
+                throw new RuntimeException("Wrong answer");
+            }
         }
     }
 

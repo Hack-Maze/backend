@@ -15,4 +15,5 @@ public interface QuestionService {
     String deleteQuestion(long questionId) throws AccessDeniedException;
     String getQuestionHint(long questionId);
     String getQuestionAnswer(long questionId) throws AccessDeniedException;
+    void assignEnvToQuestion(long questionId, String envKey);
 }

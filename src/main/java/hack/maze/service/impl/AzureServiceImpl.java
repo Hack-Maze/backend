@@ -9,9 +9,7 @@ import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobServiceProperties;
 import hack.maze.dto.CreateContainerResponseDTO;
 import hack.maze.dto.DockerfileInfoDTO;
-import hack.maze.entity.AzureContainer;
-import hack.maze.entity.Maze;
-import hack.maze.entity.Type;
+import hack.maze.entity.*;
 import hack.maze.service.AzureContainerService;
 import hack.maze.service.AzureService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +22,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -68,6 +67,7 @@ public class AzureServiceImpl implements AzureService {
     private final BlobServiceClient blobServiceClient;
     private final AzureContainerService azureContainerService;
     private final TaskScheduler taskScheduler;
+    private final PasswordEncoder passwordEncoder;
     private final List<String> allowedContentTypesForImages = List.of("image/jpeg", "image/png", "image/gif");
 
     @Override
@@ -330,7 +330,7 @@ public class AzureServiceImpl implements AzureService {
 
     @Override
     @Transactional
-    public void runYourContainer(Maze maze) {
+    public String runYourContainer(Maze maze) {
 
         String url = createAzureServiceDomain + "/start-container";
 
@@ -340,17 +340,30 @@ public class AzureServiceImpl implements AzureService {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("user_name", getCurrentUser());
         requestBody.put("container_image", maze.getDockerImageName());
-        Map<String, String> env = maze.getEnvTemplate();
-        for (var m : env.entrySet()) {
-            m.setValue(m.getValue().replace("FLAG_PLACEHOLDER", UUID.randomUUID().toString()));
-        }
-        Map<String, String> newMap = new HashMap<>();
 
-        requestBody.put("environment_variables", env);
+        Map<String, String> env = maze.getEnvTemplate();
+        Map<String, String> newMap = new HashMap<>();
+        BeanUtils.copyProperties(newMap, env);
+
+        List<Question> mazeQuestions = new ArrayList<>();
+
+        for (Page page : maze.getPages()) {
+            mazeQuestions.addAll(page.getQuestions());
+        }
+
+        for (Question question : mazeQuestions) {
+            if (question.getType() == QuestionType.STATIC) {
+                newMap.put(question.getEnvKey() != null ? question.getEnvKey() : "null", question.getAnswer());
+            } else {
+                newMap.put(question.getEnvKey(), "HackMaze{" + passwordEncoder.encode(getCurrentUser() + "-" + maze.getId() + "-" + question.getId()) + "}");
+            }
+        }
+
+        requestBody.put("environment_variables", newMap);
         requestBody.put("open_ports", maze.getPorts());
         requestBody.put("maze_title", maze.getTitle());
 
-        BeanUtils.copyProperties(newMap, env);
+        log.info("{}", requestBody);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
@@ -361,6 +374,7 @@ public class AzureServiceImpl implements AzureService {
         }
 
         CreateContainerResponseDTO resBody = d.getBody();
+
 
         azureContainerService.saveAzureContainer(AzureContainer
                 .builder()
@@ -374,10 +388,7 @@ public class AzureServiceImpl implements AzureService {
         // create scheduler to stop the container after 1h
         runRoutine(resBody.resource_group_name());
 
-        // delete azure container instance
-        azureContainerService.deleteAzureContainer(resBody.resource_group_name());
-
-        log.info("scheduler started successfully");
+        return resBody.DNS();
     }
 
     private void runRoutine(String resourceGroupName) {
@@ -399,6 +410,9 @@ public class AzureServiceImpl implements AzureService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
         ResponseEntity<String> d = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+        // delete azure container instance
+        azureContainerService.deleteAzureContainer(resourceGroupName);
 
         log.info(d.getBody());
     }

@@ -3,6 +3,7 @@ package hack.maze.service;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Set;
 
 import hack.maze.dto.LeaderboardMazeDTO;
 import hack.maze.dto.MazeResponseDTO;
@@ -10,10 +11,6 @@ import hack.maze.dto.MazeSimpleDTO;
 import hack.maze.dto.UpdateMazeDTO;
 import hack.maze.dto.*;
 import hack.maze.entity.Maze;
-
-import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.util.List;
 
 public interface MazeService {
     Long createMaze(UpdateMazeDTO updateMazeDTO) throws IOException;
@@ -32,4 +29,5 @@ public interface MazeService {
     List<CreatedMazeDTO> solvedMazes(String username);
     List<CreatedMazeDTO> getCurrentUserSolvedMazes();
     List<CreatedMazeDTO> getCurrentUserCreatedMazes();
+    Set<String> listEnvKeys(long mazeId);
 }

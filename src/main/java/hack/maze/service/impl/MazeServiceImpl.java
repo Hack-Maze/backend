@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import hack.maze.dto.CreatedMazeDTO;
 import hack.maze.dto.LeaderboardMazeDTO;
@@ -200,8 +201,7 @@ public class MazeServiceImpl implements MazeService {
     @Override
     public String runContainer(long mazeId) {
         Maze maze = _getSingleMaze(mazeId);
-        azureService.runYourContainer(maze);
-        return "container created successfully";
+        return azureService.runYourContainer(maze);
     }
 
     @Override
@@ -231,6 +231,12 @@ public class MazeServiceImpl implements MazeService {
     public List<CreatedMazeDTO> getCurrentUserCreatedMazes() {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
         return fromMazeToCreatedMazeDTO(profile.getCreatedMazes());
+    }
+
+    @Override
+    public Set<String> listEnvKeys(long mazeId) {
+        Maze maze = _getSingleMaze(mazeId);
+        return maze.getEnvTemplate().keySet();
     }
 
 }

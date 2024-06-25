@@ -99,7 +99,7 @@ public class InitDB {
         // create question
         Question savedQuestion = questionRepo.save(Question
                 .builder()
-                .type("type")
+                .type(QuestionType.DYNAMIC)
                 .content("content")
                 .answer("answer")
                 .page(savedPage)

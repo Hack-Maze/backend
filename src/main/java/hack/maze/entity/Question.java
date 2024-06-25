@@ -22,11 +22,12 @@ public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String type;
+    private QuestionType type;
     private String content;
     private String answer;
     private String hint;
     private int points;
+    private String envKey;
 
     @ManyToOne
     @JsonBackReference

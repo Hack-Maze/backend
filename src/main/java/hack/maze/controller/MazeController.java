@@ -133,6 +133,15 @@ public class MazeController {
         }
     }
 
+    @GetMapping("/env-list/{mazeId}")
+    public ResponseEntity<?> getEnvList(@PathVariable long mazeId) {
+        try {
+            return ResponseEntity.ok(mazeService.listEnvKeys(mazeId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 
 }
 

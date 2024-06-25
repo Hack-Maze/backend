@@ -6,6 +6,7 @@ import hack.maze.entity.Difficulty;
 import hack.maze.entity.Maze;
 import hack.maze.entity.Page;
 import hack.maze.entity.Question;
+import hack.maze.entity.QuestionType;
 import hack.maze.repository.QuestionRepo;
 import hack.maze.service.PageService;
 import hack.maze.service.QuestionService;
@@ -19,10 +20,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.Objects;
 
 import static hack.maze.config.UserContext.getCurrentUser;
-import static hack.maze.constant.ApplicationConstant.EASY_POINTS;
-import static hack.maze.constant.ApplicationConstant.FUNDAMENTAL_POINTS;
-import static hack.maze.constant.ApplicationConstant.HARD_POINTS;
-import static hack.maze.constant.ApplicationConstant.MEDIUM_POINTS;
+import static hack.maze.constant.ApplicationConstant.*;
 import static hack.maze.mapper.QuestionMapper.fromQuestionToQuestionResponseDTO;
 import static hack.maze.utils.GlobalMethods.checkUserAuthority;
 import static hack.maze.utils.GlobalMethods.nullMsg;
@@ -43,6 +41,9 @@ public class QuestionServiceImpl implements QuestionService {
         Page page = pageService._getSinglePage(pageId);
         checkPointLimitExceeds(questionDTO.points(), page.getMaze());
         Question savedQuestion = questionRepo.save(fillQuestionInfo(questionDTO, page));
+        if (savedQuestion.getType() == QuestionType.DYNAMIC) {
+            savedQuestion.setAnswer(null);
+        }
         updateMazeTotalPoints(page.getMaze(), savedQuestion.getPoints());
         return savedQuestion.getId();
     }
@@ -59,15 +60,22 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private Question fillQuestionInfo(QuestionDTO questionDTO, Page page) {
-        return Question
+        QuestionType questionType = QuestionType.valueOf(questionDTO.type());
+        Question question = Question
                 .builder()
-                .type(questionDTO.type())
+                .type(questionType)
                 .content(questionDTO.content())
-                .answer(questionDTO.answer())
                 .hint(questionDTO.hint())
                 .page(page)
                 .points(questionDTO.points())
                 .build();
+        if (questionType == QuestionType.STATIC) {
+            if (questionDTO.answer() == null) {
+                throw new RuntimeException("Question with type static should be presented");
+            }
+            question.setAnswer(questionDTO.answer());
+        }
+        return question;
     }
 
     private int getMaxMazePoints(Difficulty mazeDifficulty) {
@@ -89,7 +97,6 @@ public class QuestionServiceImpl implements QuestionService {
 
     private void validateQuestionInfo(QuestionDTO questionDTO) {
         Objects.requireNonNull(questionDTO.content(), nullMsg("content"));
-        Objects.requireNonNull(questionDTO.answer(), nullMsg("answer"));
         Objects.requireNonNull(questionDTO.hint(), nullMsg("hint"));
         Objects.requireNonNull(questionDTO.type(), nullMsg("type"));
     }
@@ -119,7 +126,7 @@ public class QuestionServiceImpl implements QuestionService {
             targetQuestion.setHint(questionDTO.hint());
         }
         if (questionDTO.type() != null) {
-            targetQuestion.setType(questionDTO.type());
+            targetQuestion.setType(QuestionType.valueOf(questionDTO.type()));
         }
         return "Question with id = [" + questionId + "] updated successfully";
     }
@@ -144,4 +151,15 @@ public class QuestionServiceImpl implements QuestionService {
         checkUserAuthority(userService.getSingleUser(getCurrentUser()), question);
         return question.getAnswer();
     }
+
+    @Override
+    @Transactional
+    public void assignEnvToQuestion(long questionId, String envKey) {
+        Question question = _getSingleQuestion(questionId);
+        if (question.getType() == QuestionType.STATIC) {
+            throw new RuntimeException("to assign answer the question type should be static");
+        }
+        question.setEnvKey(envKey);
+    }
+
 }
