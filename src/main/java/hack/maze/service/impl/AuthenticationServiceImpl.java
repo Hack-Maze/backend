@@ -4,6 +4,7 @@ import hack.maze.dto.AuthenticationRequestDTO;
 import hack.maze.dto.AuthenticationResponseDTO;
 import hack.maze.dto.RegisterDTO;
 import hack.maze.entity.AppUser;
+import hack.maze.entity.Level;
 import hack.maze.entity.Profile;
 import hack.maze.entity.Role;
 import hack.maze.repository.ProfileRepo;
@@ -57,6 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Profile profile = Profile
                 .builder()
                 .appUser(savedUser)
+                .level(Level.NOOB)
                 .build();
         profileRepo.save(profile);
 
