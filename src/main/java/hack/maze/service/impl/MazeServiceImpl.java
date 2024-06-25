@@ -205,11 +205,6 @@ public class MazeServiceImpl implements MazeService {
     }
 
     @Override
-    public List<LeaderboardMazeDTO> getSolvedMazesByProfileId() {
-        return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileService._getSingleProfile(getCurrentUser()).getId()));
-    }
-
-    @Override
     public List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId) {
         return fromMazeToMazeToLeaderboardMazeDTO(mazeRepo.getSolvedMazesByProfileId(profileId));
     }

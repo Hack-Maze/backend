@@ -30,6 +30,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.LinkedHashMap;
+
 
 import static hack.maze.config.UserContext.getCurrentUser;
 
@@ -141,6 +150,29 @@ public class ProgressServiceImpl implements ProgressService {
     }
 
     @Override
+    public Map<String, Long> getCurrentUserProgressThisWeek() { 
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        LocalDate start = LocalDate.now().minusDays(6); // Start from 6 days ago to include today and make a full week
+        LocalDate end = LocalDate.now();
+        List<QuestionProgress> questionProgresses = questionProgressRepo.findBySolvedAtBetweenAndProfileId(start, end, profile.getId());
+
+        // Initialize a map to hold the count of solved questions per day, formatted as "dd MMMM"
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM", Locale.ENGLISH);
+        Map<String, Long> solvedQuestionsPerDay = IntStream.rangeClosed(0, 6)
+                .mapToObj(start::plusDays)
+                .collect(Collectors.toMap(date -> date.format(formatter), date -> 0L, (existing, replacement) -> existing, LinkedHashMap::new));
+
+        // Populate the map with actual counts
+        questionProgresses.forEach(questionProgress -> {
+            String solvedDate = questionProgress.getSolvedAt().toLocalDate().format(formatter);
+            solvedQuestionsPerDay.computeIfPresent(solvedDate, (date, count) -> count + 1);
+        });
+
+        return solvedQuestionsPerDay;
+    }
+
+
+    @Override
     public List<LeaderboardMazeDTO> notCompletedMazes() {
         Profile profile = profileService._getSingleProfile(getCurrentUser());
         return MazeMapper.fromMazeToMazeToLeaderboardMazeDTO(profileMazeProgressRepo.notCompletedMazes(profile.getId()));
@@ -238,5 +270,25 @@ public class ProgressServiceImpl implements ProgressService {
                 .maze(maze)
                 .enrolledAt(LocalDateTime.now())
                 .build());
+    }
+
+    // type getCurrentLevelProgress method takes no arguments and returns json like the following:
+    // {
+    // "currentLevel": "NOOB",
+    // "points": 1000,
+    // "nextLevelPoints": 2000
+
+// }
+    @Override
+    public Map<String, Object> getCurrentLevelProgress() {
+        Profile profile = profileService._getSingleProfile(getCurrentUser());
+        Level currentLevel = profile.getLevel();
+        Level nextLevel = Level.values()[currentLevel.ordinal() + 1];
+        int nextLevelPoints = nextLevel.getValue();
+        return Map.of(
+                "currentLevel", currentLevel.name(),
+                "points", profile.getRank(),
+                "nextLevelPoints", nextLevelPoints
+        );
     }
 }

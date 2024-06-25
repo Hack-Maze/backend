@@ -24,7 +24,6 @@ public interface MazeService {
     String updateMaze(long mazeId, UpdateMazeDTO updateMazeDTO) throws IOException;
     boolean isCurrentUserEnrolledInMaze(long mazeId);
     boolean isCurrentUserSolverInMaze(long mazeId);
-    List<LeaderboardMazeDTO> getSolvedMazesByProfileId();
     List<LeaderboardMazeDTO> getSolvedMazesByProfileId(long profileId);
     String buildImageFromMaze(long mazeId);
     void buildImageFromMaze(Maze maze);

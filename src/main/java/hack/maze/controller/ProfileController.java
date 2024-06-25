@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hack.maze.dto.CreateProfileDTO;
 import hack.maze.service.ProfileService;
+import hack.maze.service.ProgressService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -47,22 +48,8 @@ public class ProfileController {
         }
     }
 
-    @GetMapping("/created-mazes")
-    public ResponseEntity<?> getAllProfileCreatedMazes() {
-        try {
-            return ResponseEntity.ok(profileService.getAllProfileCreatedMazes());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-    
-    @GetMapping("/created-mazes/{profileId}")
-    public ResponseEntity<?> getAllProfileCreatedMazes(@PathVariable long profileId) {
-        try {
-            return ResponseEntity.ok(profileService.getAllProfileCreatedMazes(profileId));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
+
+
 
 }
+    

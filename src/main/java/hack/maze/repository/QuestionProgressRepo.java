@@ -17,4 +17,8 @@ public interface QuestionProgressRepo extends JpaRepository<QuestionProgress, Lo
 
     @Query("SELECT qp FROM QuestionProgress qp WHERE DATE(qp.solvedAt) BETWEEN ?1 AND ?2")
     List<QuestionProgress> findBySolvedAtBetween(LocalDate start, LocalDate end);
+
+    @Query("SELECT qp FROM QuestionProgress qp WHERE DATE(qp.solvedAt) BETWEEN ?1 AND ?2 AND qp.profile.id = ?3")
+    List<QuestionProgress> findBySolvedAtBetweenAndProfileId(LocalDate start, LocalDate end, Long profileId);
+
 }
