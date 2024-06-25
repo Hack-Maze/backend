@@ -106,7 +106,7 @@ public class MazeController {
         }
     }
 
-    @GetMapping("/solved-mazes/{username}")
+    @GetMapping("/solve-mazes/{username}")
     public ResponseEntity<?> getSolvedMazes(@PathVariable String username) {
         try {
             return ResponseEntity.ok(mazeService.solvedMazes(username));
@@ -135,3 +135,4 @@ public class MazeController {
 
 
 }
+
