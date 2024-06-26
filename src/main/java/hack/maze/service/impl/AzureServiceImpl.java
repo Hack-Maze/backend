@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -69,6 +71,7 @@ public class AzureServiceImpl implements AzureService {
     private final TaskScheduler taskScheduler;
     private final PasswordEncoder passwordEncoder;
     private final List<String> allowedContentTypesForImages = List.of("image/jpeg", "image/png", "image/gif");
+    private final ResourceLoader resourceLoader;
 
     @Override
     public String sendImageToAzure(MultipartFile image, String containerBlobName, Long blobName) throws IOException {
@@ -206,8 +209,10 @@ public class AzureServiceImpl implements AzureService {
     }
 
     private File unzipFile(MultipartFile zippedFile) throws IOException {
-        File destDir = new File("/tmp"); 
+        Resource resource = resourceLoader.getResource("classpath:");
         String fileName = Objects.requireNonNull(zippedFile.getOriginalFilename()).split("\\.")[0];
+        String unzippedPath = resource.getFile().getAbsolutePath() + "/static/";
+        File destDir = new File(unzippedPath);
         if (!destDir.exists()) {
             if (!destDir.mkdirs()) {
                 log.error("can't create dir");
@@ -241,7 +246,7 @@ public class AzureServiceImpl implements AzureService {
                 }
                 zipInputStream.closeEntry();
             }
-            return new File("/tmp/" + fileName);
+            return new File(unzippedPath + "/" + fileName);
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
