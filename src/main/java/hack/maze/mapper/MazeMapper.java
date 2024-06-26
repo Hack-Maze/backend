@@ -34,6 +34,7 @@ public class MazeMapper {
                 .tags(maze.getTags())
                 .pages(fromPageToMazePageDTO(maze.getPages()))
                 .totalPoints(maze.getTotalPoints())
+                .file(maze.getFile())
                 .build();
     }
 

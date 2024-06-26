@@ -150,7 +150,7 @@ public class AzureServiceImpl implements AzureService {
         maze.setEnvTemplate(dockerfileInfoDTO.env());
         maze.setPorts(dockerfileInfoDTO.ports());
 
-        deleteDirectory(dir);
+//        deleteDirectory(dir);
     }
 
     private DockerfileInfoDTO loopThroughDockerFileAndGetEnvAndPorts(File dockerfile) {
