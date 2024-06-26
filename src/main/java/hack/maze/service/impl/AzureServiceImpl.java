@@ -409,7 +409,11 @@ public class AzureServiceImpl implements AzureService {
             if (question.getType() == QuestionType.STATIC) {
                 newMap.put(question.getEnvKey() != null ? question.getEnvKey() : "null", question.getAnswer());
             } else {
+                // log the result of question.gentEnvKey()
+                log.info("question envkey {}", question.getEnvKey());
                 newMap.put(question.getEnvKey(), "HackMaze{" + passwordEncoder.encode(getCurrentUser() + "-" + maze.getId() + "-" + question.getId()) + "}");
+                // log the newMap
+                log.info("new map: {}", newMap);
             }
         }
 
@@ -417,7 +421,7 @@ public class AzureServiceImpl implements AzureService {
         requestBody.put("open_ports", maze.getPorts());
         requestBody.put("maze_title", maze.getTitle());
 
-        log.info("{}", requestBody);
+
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
