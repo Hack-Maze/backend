@@ -62,8 +62,10 @@ public class MazeServiceImpl implements MazeService {
             savedMaze.setType(Type.valueOf(updateMazeDTO.type()));
             savedMaze.setFile(azureService.sendImageToAzure(updateMazeDTO.file(), IMAGES_BLOB_CONTAINER_MAZES, savedMaze, savedMaze.getType()));
             buildImageFromMaze(savedMaze);
+        } else {
+            savedMaze.setType(Type.NO_FILE);
+            savedMaze.setFile(null);
         }
-        mazeRepo.save(savedMaze);
         updateProfileCreatedMazes(savedMaze);
         return savedMaze.getId();
     }
