@@ -86,4 +86,7 @@ public class Maze {
     @JsonManagedReference
     private List<Page> pages;
 
+    @OneToMany(mappedBy = "maze", cascade = CascadeType.REMOVE)
+    private List<ProfileMazeProgress> profileMazeProgresses;
+
 }
