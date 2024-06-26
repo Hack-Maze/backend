@@ -27,6 +27,7 @@ public class MazeMapper {
                 .createdAt(maze.getCreatedAt())
                 .visibility(maze.isVisibility())
                 .image(maze.getImage())
+                .file(maze.getFile())
                 .difficulty(maze.getDifficulty())
                 .author(fromProfileToMazeProfileDTO(maze.getAuthor()))
                 .numberOfEnrolledUsers(maze.getEnrolledUsers().size())
