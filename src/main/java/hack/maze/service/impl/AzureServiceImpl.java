@@ -206,7 +206,7 @@ public class AzureServiceImpl implements AzureService {
     }
 
     private File unzipFile(MultipartFile zippedFile) throws IOException {
-        File destDir = new File("src/main/java");
+        File destDir = new File("/tmp"); 
         String fileName = Objects.requireNonNull(zippedFile.getOriginalFilename()).split("\\.")[0];
         if (!destDir.exists()) {
             if (!destDir.mkdirs()) {
@@ -241,7 +241,7 @@ public class AzureServiceImpl implements AzureService {
                 }
                 zipInputStream.closeEntry();
             }
-            return new File("src/main/java/" + fileName);
+            return new File("/tmp/" + fileName);
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
