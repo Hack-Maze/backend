@@ -34,7 +34,7 @@ public class ProfilePageProgress {
     @JoinColumn(name = "profile_maze_progress_id", referencedColumnName = "id")
     private ProfileMazeProgress profileMazeProgress;
 
-    @OneToMany(mappedBy = "profilePageProgress")
+    @OneToMany(mappedBy = "profilePageProgress", cascade = CascadeType.REMOVE)
     private List<QuestionProgress> questionProgresses;
 
     private boolean isCompleted;
