@@ -11,7 +11,7 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 USER appuser
-
+ 
 # Set the command to run the application
 COPY app-0.0.1-SNAPSHOT.jar app.jar
  
