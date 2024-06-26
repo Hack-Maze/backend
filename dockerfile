@@ -1,25 +1,28 @@
-
 FROM eclipse-temurin:17-jre-alpine AS final
 
-COPY app-0.0.1-SNAPSHOT.jar app.jar
+# Copy the JAR file into the image
 
 ARG UID=10001
 RUN adduser \
     --disabled-password \
     --gecos "" \
-    --home "/nonexistent" \
+    --home "/apphome" \
     --shell "/sbin/nologin" \
-    --no-create-home \
     --uid "${UID}" \
     appuser
 
-RUN  chown appuser:appuser app.jar
 
+WORKDIR /apphome
+
+# Copy the JAR file into the user's home directory
+COPY app-0.0.1-SNAPSHOT.jar app.jar
+
+
+# Switch to the appuser
 USER appuser
- 
-# Set the command to run the application
 
+# Expose port 4444
 EXPOSE 4444
- 
-CMD ["java", "-jar", "app.jar"]
 
+# Set the working directory to the user's home directory and run the application
+CMD ["java", "-jar", "app.jar"]
