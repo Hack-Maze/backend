@@ -132,21 +132,12 @@ public class InitDB {
 
             if (userRepo.count() == 0) {
                 init();
-                AppUser savedUser = userRepo.save(AppUser
-                        .builder()
-                        .email("admin@admin.admin")
-                        .username("admin")
-                        .password("$2a$12$ugoECT/fnHBIRgczCJbe2eOKRDgKFrjTOKuG3EViEX3dk8HGo1r9C")
-                        .role(Role.ADMIN)
-                        .createdAt(LocalDateTime.now())
-                        .build());
-                profileRepo.save(Profile.builder().appUser(savedUser).build());
             }
 
             if (userRepo.findByUsername("HackMaze").isEmpty()) {
                 AppUser admin = userRepo.save(AppUser
                         .builder()
-                        .email("admin@admin.admin")
+                        .email("HackMaze@HackMaze.HackMaze")
                         .username("HackMaze")
                         .password(passwordEncoder.encode(passFromEnv))
                         .role(Role.ADMIN)

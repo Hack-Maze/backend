@@ -38,6 +38,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -131,6 +132,10 @@ public class AzureServiceImpl implements AzureService {
     @Transactional
     protected void setEnvTemplateAndPortFromZipFile(Maze maze, MultipartFile file) throws IOException {
         File dir = unzipFile(file);
+        Files.walk(dir.toPath())
+                .filter(Files::isRegularFile)
+                .forEach(System.out::println);
+
         File dockerfile = null;
         try {
             dockerfile = getDockerfileFromListOfFiles(dir);
@@ -208,33 +213,76 @@ public class AzureServiceImpl implements AzureService {
         }
     }
 
-    private File unzipFile(MultipartFile zippedFile) throws IOException {
-        Resource resource = resourceLoader.getResource("classpath:");
-        String fileName = Objects.requireNonNull(zippedFile.getOriginalFilename()).split("\\.")[0];
-        String unzippedPath = resource.getFile().getAbsolutePath() + "/static/";
-        File destDir = new File(unzippedPath);
-        if (!destDir.exists()) {
-            if (!destDir.mkdirs()) {
-                log.error("can't create dir");
-            }
+//    private File unzipFile(MultipartFile zippedFile) throws IOException {
+//        Resource resource = resourceLoader.getResource("classpath:");
+//        String fileName = Objects.requireNonNull(zippedFile.getOriginalFilename()).split("\\.")[0];
+//        String unzippedPath = resource.getFile().getAbsolutePath() + "/static/";
+//        File destDir = new File(unzippedPath);
+//        if (!destDir.exists()) {
+//            if (!destDir.mkdirs()) {
+//                log.error("can't create dir");
+//            }
+//        }
+//
+//        try (ZipInputStream zipInputStream =
+//                     new ZipInputStream(
+//                             new FileInputStream(convert(zippedFile)))) {
+//            ZipEntry entry;
+//            while ((entry = zipInputStream.getNextEntry()) != null) {
+//                File file = new File(destDir, entry.getName());
+//                if (entry.isDirectory()) {
+//                    if (!file.mkdirs()) {
+//                        log.error("can't create dir  ");
+//                    }
+//                } else {
+//                    File parentDir = file.getParentFile();
+//                    if (!parentDir.exists()) {
+//                        if (!parentDir.mkdirs()) {
+//                            log.error("can't create dir ");
+//                        }
+//                    }
+//                    try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
+//                        byte[] buffer = new byte[1024];
+//                        int length;
+//                        while ((length = zipInputStream.read(buffer)) > 0) {
+//                            outputStream.write(buffer, 0, length);
+//                        }
+//                    }
+//                }
+//                zipInputStream.closeEntry();
+//            }
+//            return new File(unzippedPath + "/" + fileName);
+//        } catch (Exception e) {
+//            throw new IOException(e.getMessage());
+//        }
+//    }
+
+    public File unzipFile(MultipartFile zippedFile) throws IOException {
+        // Define the external directory path where the files will be unzipped
+        String externalDirPath = "./static";
+
+        // Create the external directory if it does not exist
+        File destDir = new File(externalDirPath);
+        if (!destDir.exists() && !destDir.mkdirs()) {
+            throw new IOException("Unable to create directory: " + externalDirPath);
         }
 
-        try (ZipInputStream zipInputStream =
-                     new ZipInputStream(
-                             new FileInputStream(convert(zippedFile)))) {
+        String fileName = Objects.requireNonNull(zippedFile.getOriginalFilename()).split("\\.")[0];
+        String unzippedPath = externalDirPath + "/" + fileName;
+
+        // Unzip the file
+        try (ZipInputStream zipInputStream = new ZipInputStream(zippedFile.getInputStream())) {
             ZipEntry entry;
             while ((entry = zipInputStream.getNextEntry()) != null) {
-                File file = new File(destDir, entry.getName());
+                File file = new File(unzippedPath, entry.getName());
                 if (entry.isDirectory()) {
-                    if (!file.mkdirs()) {
-                        log.error("can't create dir  ");
+                    if (!file.mkdirs() && !file.isDirectory()) {
+                        throw new IOException("Unable to create directory: " + file.getAbsolutePath());
                     }
                 } else {
                     File parentDir = file.getParentFile();
-                    if (!parentDir.exists()) {
-                        if (!parentDir.mkdirs()) {
-                            log.error("can't create dir ");
-                        }
+                    if (!parentDir.exists() && !parentDir.mkdirs() && !parentDir.isDirectory()) {
+                        throw new IOException("Unable to create directory: " + parentDir.getAbsolutePath());
                     }
                     try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
                         byte[] buffer = new byte[1024];
@@ -246,12 +294,13 @@ public class AzureServiceImpl implements AzureService {
                 }
                 zipInputStream.closeEntry();
             }
-            return new File(unzippedPath + "/" + fileName);
         } catch (Exception e) {
-            throw new IOException(e.getMessage());
+            throw new IOException("Failed to unzip file: " + e.getMessage(), e);
         }
-    }
 
+        // Return the path to the unzipped directory
+        return new File(unzippedPath + "/" + fileName);
+    }
     public File convert(MultipartFile multipartFile) {
         File file = new File(Objects.requireNonNull(multipartFile.getOriginalFilename()));
 
