@@ -106,7 +106,7 @@ public class MazeController {
         }
     }
 
-    @GetMapping("/solve-mazes/{username}")
+    @GetMapping("/solved-mazes/{username}")
     public ResponseEntity<?> getSolvedMazes(@PathVariable String username) {
         try {
             return ResponseEntity.ok(mazeService.solvedMazes(username));
