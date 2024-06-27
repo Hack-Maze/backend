@@ -26,6 +26,7 @@ public class MazeMapper {
                 .summary(maze.getSummary())
                 .createdAt(maze.getCreatedAt())
                 .visibility(maze.isVisibility())
+                .type(maze.getType())
                 .image(maze.getImage())
                 .file(maze.getFile())
                 .difficulty(maze.getDifficulty())
