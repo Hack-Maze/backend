@@ -190,6 +190,7 @@ public class ProgressServiceImpl implements ProgressService {
                 throw new RuntimeException("Wrong answer");
             }
         } else {
+            userAnswer = userAnswer.substring(userAnswer.indexOf("{") + 1, userAnswer.indexOf("}"));
             if (!passwordEncoder.matches(getCurrentUser() + "-" + question.getPage().getMaze().getId() + "-" + question.getId(), userAnswer)) {
                 throw new RuntimeException("Wrong answer");
             }

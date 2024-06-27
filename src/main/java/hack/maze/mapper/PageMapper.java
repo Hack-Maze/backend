@@ -4,7 +4,6 @@ import hack.maze.dto.MazePageDTO;
 import hack.maze.dto.PageProgressDTO;
 import hack.maze.dto.PageResponseDTO;
 import hack.maze.entity.Page;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
