@@ -450,7 +450,7 @@ public class AzureServiceImpl implements AzureService {
     }
 
     private void runRoutine(String resourceGroupName) {
-        LocalDateTime ldt = LocalDateTime.now().plusHours(1);
+        LocalDateTime ldt = LocalDateTime.now().plusHours(10);
         Instant instant = ldt.atZone(ZoneId.of("Africa/Cairo")).toInstant();
         taskScheduler.schedule(() -> stopRunningContainer(resourceGroupName), instant);
     }
