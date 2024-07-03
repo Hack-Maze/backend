@@ -33,13 +33,13 @@ jobs:
     steps:
     - name: Check out the code
       uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag localbuild/testimage:latest
+    # - name: Build the Docker image
+    #   run: docker build . --file Dockerfile --tag localbuild/testimage:latest
     - name: Run the Anchore Grype scan action
       uses: anchore/scan-action@d5aa5b6cb9414b0c7771438046ff5bcfa2854ed7
       id: scan
       with:
-        image: "localbuild/testimage:latest"
+        image: "mostafaewida/hackmaze_backend_spring:latest"
         fail-build: true
         severity-cutoff: critical
     - name: Upload vulnerability report
